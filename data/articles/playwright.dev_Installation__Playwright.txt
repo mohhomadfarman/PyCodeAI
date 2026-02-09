@@ -1,0 +1,38 @@
+Title: Installation | Playwright
+Source: https://playwright.dev/docs/intro
+
+Playwright Test is an end-to-end test framework for modern web apps. It bundles test runner, assertions, isolation, parallelization and rich tooling. Playwright supports Chromium, WebKit and Firefox on Windows, Linux and macOS, locally or in CI, headless or headed, with native mobile emulation for Chrome (Android) and Mobile Safari.
+
+You will learn
+
+Get started by installing Playwright using one of the following methods.
+
+The command below either initializes a new project or adds Playwright to an existing one.
+
+When prompted, choose / confirm:
+
+You can re-run the command later; it does not overwrite existing tests.
+
+You can also create and run tests with the VS Code Extension.
+
+Playwright downloads required browser binaries and creates the scaffold below.
+
+The playwright.config centralizes configuration: target browsers, timeouts, retries, projects, reporters and more. In existing projects dependencies are added to your current package.json.
+
+tests/ contains a minimal starter test.
+
+By default tests run headless in parallel across Chromium, Firefox and WebKit (configurable in playwright.config). Output and aggregated results display in the terminal.
+
+Tips:
+
+See Running Tests for details on filtering, headed mode, sharding and retries.
+
+After a test run, the HTML Reporter provides a dashboard filterable by the browser, passed, failed, skipped, flaky and more. Click a test to inspect errors, attachments and steps. It auto-opens only when failures occur; open manually with the command below.
+
+Run tests with UI Mode for watch mode, live step view, time travel debugging and more.
+
+See the detailed guide on UI Mode for watch filters, step details and trace integration.
+
+Update Playwright and download new browser binaries and their dependencies:
+
+Check your installed version:

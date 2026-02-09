@@ -1,0 +1,1451 @@
+Title: HTTP | Node.js v25.6.0 Documentation
+Source: https://nodejs.org/api/http.html
+
+Source Code: lib/http.js
+
+This module, containing both a client and server, can be imported via
+require('node:http') (CommonJS) or import * as http from 'node:http' (ES module).
+
+The HTTP interfaces in Node.js are designed to support many features
+of the protocol which have been traditionally difficult to use.
+In particular, large, possibly chunk-encoded, messages. The interface is
+careful to never buffer entire requests or responses, so the
+user is able to stream data.
+
+HTTP message headers are represented by an object like this:
+
+Keys are lowercased. Values are not modified.
+
+In order to support the full spectrum of possible HTTP applications, the Node.js
+HTTP API is very low-level. It deals with stream handling and message
+parsing only. It parses a message into headers and body but it does not
+parse the actual headers or the body.
+
+See message.headers for details on how duplicate headers are handled.
+
+The raw headers as they were received are retained in the rawHeaders
+property, which is an array of [key, value, key2, value2, ...]. For
+example, the previous message header object might have a rawHeaders
+list like the following:
+
+An Agent is responsible for managing connection persistence
+and reuse for HTTP clients. It maintains a queue of pending requests
+for a given host and port, reusing a single socket connection for each
+until the queue is empty, at which time the socket is either destroyed
+or put into a pool where it is kept to be used again for requests to the
+same host and port. Whether it is destroyed or pooled depends on the
+keepAlive option.
+
+Pooled connections have TCP Keep-Alive enabled for them, but servers may
+still close idle connections, in which case they will be removed from the
+pool and a new connection will be made when a new HTTP request is made for
+that host and port. Servers may also refuse to allow multiple requests
+over the same connection, in which case the connection will have to be
+remade for every request and cannot be pooled. The Agent will still make
+the requests to that server, but each one will occur over a new connection.
+
+When a connection is closed by the client or the server, it is removed
+from the pool. Any unused sockets in the pool will be unrefed so as not
+to keep the Node.js process running when there are no outstanding requests.
+(see socket.unref()).
+
+It is good practice, to destroy() an Agent instance when it is no
+longer in use, because unused sockets consume OS resources.
+
+Sockets are removed from an agent when the socket emits either
+a 'close' event or an 'agentRemove' event. When intending to keep one
+HTTP request open for a long time without keeping it in the agent, something
+like the following may be done:
+
+An agent may also be used for an individual request. By providing
+{agent: false} as an option to the http.get() or http.request()
+functions, a one-time use Agent with default options will be used
+for the client connection.
+
+agent:false:
+
+Add support for proxyEnv.
+
+Add support for defaultPort and protocol.
+
+Add support for agentKeepAliveTimeoutBuffer.
+
+Change the default scheduling from 'fifo' to 'lifo'.
+
+Add scheduling option to specify the free socket scheduling strategy.
+
+Add maxTotalSockets option to agent constructor.
+
+Added in: v0.3.4
+
+options in socket.connect() are also supported.
+
+To configure any of them, a custom http.Agent instance must be created.
+
+Produces a socket/stream to be used for HTTP requests.
+
+By default, this function behaves identically to net.createConnection(),
+synchronously returning the created socket. The optional callback parameter in the
+signature is not used by this default implementation.
+
+However, custom agents may override this method to provide greater flexibility,
+for example, to create sockets asynchronously. When overriding createConnection:
+
+The agent will call the provided createConnection function with options and
+this internal callback. The callback provided by the agent has a signature
+of (err, stream).
+
+Called when socket is detached from a request and could be persisted by the
+Agent. Default behavior is to:
+
+This method can be overridden by a particular Agent subclass. If this
+method returns a falsy value, the socket will be destroyed instead of persisting
+it for use with the next request.
+
+The socket argument can be an instance of <net.Socket>, a subclass of
+<stream.Duplex>.
+
+Called when socket is attached to request after being persisted because of
+the keep-alive options. Default behavior is to:
+
+This method can be overridden by a particular Agent subclass.
+
+The socket argument can be an instance of <net.Socket>, a subclass of
+<stream.Duplex>.
+
+Destroy any sockets that are currently in use by the agent.
+
+It is usually not necessary to do this. However, if using an
+agent with keepAlive enabled, then it is best to explicitly shut down
+the agent when it is no longer needed. Otherwise,
+sockets might stay open for quite a long time before the server
+terminates them.
+
+The property now has a null prototype.
+
+Added in: v0.11.4
+
+An object which contains arrays of sockets currently awaiting use by
+the agent when keepAlive is enabled. Do not modify.
+
+Sockets in the freeSockets list will be automatically destroyed and
+removed from the array on 'timeout'.
+
+The options parameter is now optional.
+
+Added in: v0.11.4
+
+Get a unique name for a set of request options, to determine whether a
+connection can be reused. For an HTTP agent, this returns
+host:port:localAddress or host:port:localAddress:family. For an HTTPS agent,
+the name includes the CA, cert, ciphers, and other HTTPS/TLS-specific options
+that determine socket reusability.
+
+By default set to 256. For agents with keepAlive enabled, this
+sets the maximum number of sockets that will be left open in the free
+state.
+
+By default set to Infinity. Determines how many concurrent sockets the agent
+can have open per origin. Origin is the returned value of agent.getName().
+
+By default set to Infinity. Determines how many concurrent sockets the agent
+can have open. Unlike maxSockets, this parameter applies across all origins.
+
+The property now has a null prototype.
+
+Added in: v0.5.9
+
+An object which contains queues of requests that have not yet been assigned to
+sockets. Do not modify.
+
+The property now has a null prototype.
+
+Added in: v0.3.6
+
+An object which contains arrays of sockets currently in use by the
+agent. Do not modify.
+
+This object is created internally and returned from http.request(). It
+represents an in-progress request whose header has already been queued. The
+header is still mutable using the setHeader(name, value),
+getHeader(name), removeHeader(name) API. The actual header will
+be sent along with the first data chunk or when calling request.end().
+
+To get the response, add a listener for 'response' to the request object.
+'response' will be emitted from the request object when the response
+headers have been received. The 'response' event is executed with one
+argument which is an instance of http.IncomingMessage.
+
+During the 'response' event, one can add listeners to the
+response object; particularly to listen for the 'data' event.
+
+If no 'response' handler is added, then the response will be
+entirely discarded. However, if a 'response' event handler is added,
+then the data from the response object must be consumed, either by
+calling response.read() whenever there is a 'readable' event, or
+by adding a 'data' handler, or by calling the .resume() method.
+Until the data is consumed, the 'end' event will not fire. Also, until
+the data is read it will consume memory that can eventually lead to a
+'process out of memory' error.
+
+For backward compatibility, res will only emit 'error' if there is an
+'error' listener registered.
+
+Set Content-Length header to limit the response body size.
+If response.strictContentLength is set to true, mismatching the
+Content-Length header value will result in an Error being thrown,
+identified by code: 'ERR_HTTP_CONTENT_LENGTH_MISMATCH'.
+
+Content-Length value should be in bytes, not characters. Use
+Buffer.byteLength() to determine the length of the body in bytes.
+
+Emitted when the request has been aborted by the client. This event is only
+emitted on the first call to abort().
+
+Indicates that the request is completed, or its underlying connection was
+terminated prematurely (before the response completion).
+
+Emitted each time a server responds to a request with a CONNECT method. If
+this event is not being listened for, clients receiving a CONNECT method will
+have their connections closed.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+A client and server pair demonstrating how to listen for the 'connect' event:
+
+Emitted when the server sends a '100 Continue' HTTP response, usually because
+the request contained 'Expect: 100-continue'. This is an instruction that
+the client should send the request body.
+
+Emitted when the request has been sent. More specifically, this event is emitted
+when the last segment of the request headers and body have been handed off to
+the operating system for transmission over the network. It does not imply that
+the server has received anything yet.
+
+Emitted when the server sends a 1xx intermediate response (excluding 101
+Upgrade). The listeners of this event will receive an object containing the
+HTTP version, status code, status message, key-value headers object,
+and array with the raw header names followed by their respective values.
+
+101 Upgrade statuses do not fire this event due to their break from the
+traditional HTTP request/response chain, such as web sockets, in-place TLS
+upgrades, or HTTP 2.0. To be notified of 101 Upgrade notices, listen for the
+'upgrade' event instead.
+
+Emitted when a response is received to this request. This event is emitted only
+once.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+Emitted when the underlying socket times out from inactivity. This only notifies
+that the socket has been idle. The request must be destroyed manually.
+
+See also: request.setTimeout().
+
+Emitted each time a server responds to a request with an upgrade. If this
+event is not being listened for and the response status code is 101 Switching
+Protocols, clients receiving an upgrade header will have their connections
+closed.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+A client server pair demonstrating how to listen for the 'upgrade' event.
+
+Marks the request as aborting. Calling this will cause remaining data
+in the response to be dropped and the socket to be destroyed.
+
+Deprecated since: v17.0.0, v16.12.0
+
+The aborted property is no longer a timestamp number.
+
+Added in: v0.11.14
+
+The request.aborted property will be true if the request has
+been aborted.
+
+See request.socket.
+
+See writable.cork().
+
+The data parameter can now be a Uint8Array.
+
+This method now returns a reference to ClientRequest.
+
+Added in: v0.1.90
+
+Finishes sending the request. If any parts of the body are
+unsent, it will flush them to the stream. If the request is
+chunked, this will send the terminating '0\r\n\r\n'.
+
+If data is specified, it is equivalent to calling
+request.write(data, encoding) followed by request.end(callback).
+
+If callback is specified, it will be called when the request stream
+is finished.
+
+The function returns this for consistency with other Readable streams.
+
+Added in: v0.3.0
+
+Destroy the request. Optionally emit an 'error' event,
+and emit a 'close' event. Calling this will cause remaining data
+in the response to be dropped and the socket to be destroyed.
+
+See writable.destroy() for further details.
+
+Is true after request.destroy() has been called.
+
+See writable.destroyed for further details.
+
+The request.finished property will be true if request.end()
+has been called. request.end() will automatically be called if the
+request was initiated via http.get().
+
+Flushes the request headers.
+
+For efficiency reasons, Node.js normally buffers the request headers until
+request.end() is called or the first chunk of request data is written. It
+then tries to pack the request headers and data into a single TCP packet.
+
+That's usually desired (it saves a TCP round-trip), but not when the first
+data is not sent until possibly much later. request.flushHeaders() bypasses
+the optimization and kickstarts the request.
+
+Reads out a header on the request. The name is case-insensitive.
+The type of the return value depends on the arguments provided to
+request.setHeader().
+
+Returns an array containing the unique names of the current outgoing headers.
+All header names are lowercase.
+
+Returns a shallow copy of the current outgoing headers. Since a shallow copy
+is used, array values may be mutated without additional calls to various
+header-related http module methods. The keys of the returned object are the
+header names and the values are the respective header values. All header names
+are lowercase.
+
+The object returned by the request.getHeaders() method does not
+prototypically inherit from the JavaScript Object. This means that typical
+Object methods such as obj.toString(), obj.hasOwnProperty(), and others
+are not defined and will not work.
+
+Returns an array containing the unique names of the current outgoing raw
+headers. Header names are returned with their exact casing being set.
+
+Returns true if the header identified by name is currently set in the
+outgoing headers. The header name matching is case-insensitive.
+
+Limits maximum response headers count. If set to 0, no limit will be applied.
+
+Removes a header that's already defined into headers object.
+
+When sending request through a keep-alive enabled agent, the underlying socket
+might be reused. But if server closes connection at unfortunate time, client
+may run into a 'ECONNRESET' error.
+
+By marking a request whether it reused socket or not, we can do
+automatic error retry base on it.
+
+Sets a single header value for headers object. If this header already exists in
+the to-be-sent headers, its value will be replaced. Use an array of strings
+here to send multiple headers with the same name. Non-string values will be
+stored without modification. Therefore, request.getHeader() may return
+non-string values. However, the non-string values will be converted to strings
+for network transmission.
+
+or
+
+When the value is a string an exception will be thrown if it contains
+characters outside the latin1 encoding.
+
+If you need to pass UTF-8 characters in the value please encode the value
+using the RFC 8187 standard.
+
+Once a socket is assigned to this request and is connected
+socket.setNoDelay() will be called.
+
+Once a socket is assigned to this request and is connected
+socket.setKeepAlive() will be called.
+
+Consistently set socket timeout only when the socket connects.
+
+Added in: v0.5.9
+
+Once a socket is assigned to this request and is connected
+socket.setTimeout() will be called.
+
+Reference to the underlying socket. Usually users will not want to access
+this property. In particular, the socket will not emit 'readable' events
+because of how the protocol parser attaches to the socket.
+
+This property is guaranteed to be an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specified a socket
+type other than <net.Socket>.
+
+See writable.uncork().
+
+Is true after request.end() has been called. This property
+does not indicate whether the data has been flushed, for this use
+request.writableFinished instead.
+
+Is true if all data has been flushed to the underlying system, immediately
+before the 'finish' event is emitted.
+
+The chunk parameter can now be a Uint8Array.
+
+Added in: v0.1.29
+
+Sends a chunk of the body. This method can be called multiple times. If no
+Content-Length is set, data will automatically be encoded in HTTP Chunked
+transfer encoding, so that server knows when the data ends. The
+Transfer-Encoding: chunked header is added. Calling request.end()
+is necessary to finish sending the request.
+
+The encoding argument is optional and only applies when chunk is a string.
+Defaults to 'utf8'.
+
+The callback argument is optional and will be called when this chunk of data
+is flushed, but only if the chunk is non-empty.
+
+Returns true if the entire data was flushed successfully to the kernel
+buffer. Returns false if all or part of the data was queued in user memory.
+'drain' will be emitted when the buffer is free again.
+
+When write function is called with empty string or buffer, it does
+nothing and waits for more input.
+
+Emitted each time a request with an HTTP Expect: 100-continue is received.
+If this event is not listened for, the server will automatically respond
+with a 100 Continue as appropriate.
+
+Handling this event involves calling response.writeContinue() if the
+client should continue to send the request body, or generating an appropriate
+HTTP response (e.g. 400 Bad Request) if the client should not continue to send
+the request body.
+
+When this event is emitted and handled, the 'request' event will
+not be emitted.
+
+Emitted each time a request with an HTTP Expect header is received, where the
+value is not 100-continue. If this event is not listened for, the server will
+automatically respond with a 417 Expectation Failed as appropriate.
+
+When this event is emitted and handled, the 'request' event will
+not be emitted.
+
+The default behavior will return a 431 Request Header Fields Too Large if a HPE_HEADER_OVERFLOW error occurs.
+
+The rawPacket is the current buffer that just parsed. Adding this buffer to the error object of 'clientError' event is to make it possible that developers can log the broken packet.
+
+The default action of calling .destroy() on the socket will no longer take place if there are listeners attached for 'clientError'.
+
+Added in: v0.1.94
+
+If a client connection emits an 'error' event, it will be forwarded here.
+Listener of this event is responsible for closing/destroying the underlying
+socket. For example, one may wish to more gracefully close the socket with a
+custom HTTP response instead of abruptly severing the connection. The socket
+must be closed or destroyed before the listener ends.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+Default behavior is to try close the socket with a HTTP '400 Bad Request',
+or a HTTP '431 Request Header Fields Too Large' in the case of a
+HPE_HEADER_OVERFLOW error. If the socket is not writable or headers
+of the current attached http.ServerResponse has been sent, it is
+immediately destroyed.
+
+socket is the net.Socket object that the error originated from.
+
+When the 'clientError' event occurs, there is no request or response
+object, so any HTTP response sent, including response headers and payload,
+must be written directly to the socket object. Care must be taken to
+ensure the response is a properly formatted HTTP response message.
+
+err is an instance of Error with two extra columns:
+
+In some cases, the client has already received the response and/or the socket
+has already been destroyed, like in case of ECONNRESET errors. Before
+trying to send data to the socket, it is better to check that it is still
+writable.
+
+Emitted when the server closes.
+
+Emitted each time a client requests an HTTP CONNECT method. If this event is
+not listened for, then clients requesting a CONNECT method will have their
+connections closed.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+After this event is emitted, the request's socket will not have a 'data'
+event listener, meaning it will need to be bound in order to handle data
+sent to the server on that socket.
+
+This event is emitted when a new TCP stream is established. socket is
+typically an object of type net.Socket. Usually users will not want to
+access this event. In particular, the socket will not emit 'readable' events
+because of how the protocol parser attaches to the socket. The socket can
+also be accessed at request.socket.
+
+This event can also be explicitly emitted by users to inject connections
+into the HTTP server. In that case, any Duplex stream can be passed.
+
+If socket.setTimeout() is called here, the timeout will be replaced with
+server.keepAliveTimeout when the socket has served a request (if
+server.keepAliveTimeout is non-zero).
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+When the number of requests on a socket reaches the threshold of
+server.maxRequestsPerSocket, the server will drop new requests
+and emit 'dropRequest' event instead, then send 503 to client.
+
+Emitted each time there is a request. There may be multiple requests
+per connection (in the case of HTTP Keep-Alive connections).
+
+Whether this event is fired can now be controlled by the shouldUpgradeCallback and sockets will be destroyed if upgraded while no event handler is listening.
+
+Not listening to this event no longer causes the socket to be destroyed if a client sends an Upgrade header.
+
+Added in: v0.1.94
+
+Emitted each time a client's HTTP upgrade request is accepted. By default
+all HTTP upgrade requests are ignored (i.e. only regular 'request' events
+are emitted, sticking with the normal HTTP request/response flow) unless you
+listen to this event, in which case they are all accepted (i.e. the 'upgrade'
+event is emitted instead, and future communication must handled directly
+through the raw socket). You can control this more precisely by using the
+server shouldUpgradeCallback option.
+
+Listening to this event is optional and clients cannot insist on a protocol
+change.
+
+After this event is emitted, the request's socket will not have a 'data'
+event listener, meaning it will need to be bound in order to handle data
+sent to the server on that socket.
+
+If an upgrade is accepted by shouldUpgradeCallback but no event handler
+is registered then the socket is destroyed, resulting in an immediate
+connection closure for the client.
+
+This event is guaranteed to be passed an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specifies a socket
+type other than <net.Socket>.
+
+The method closes idle connections before returning.
+
+Added in: v0.1.90
+
+Stops the server from accepting new connections and closes all connections
+connected to this server which are not sending a request or waiting for
+a response.
+See net.Server.close().
+
+Closes all established HTTP(S) connections connected to this server, including
+active connections connected to this server which are sending a request or
+waiting for a response. This does not destroy sockets upgraded to a different
+protocol, such as WebSocket or HTTP/2.
+
+This is a forceful way of closing all connections and should be used with
+caution. Whenever using this in conjunction with server.close, calling this
+after server.close is recommended as to avoid race conditions where new
+connections are created between a call to this and a call to server.close.
+
+Closes all connections connected to this server which are not sending a request
+or waiting for a response.
+
+Starting with Node.js 19.0.0, there's no need for calling this method in
+conjunction with server.close to reap keep-alive connections. Using it
+won't cause any harm though, and it can be useful to ensure backwards
+compatibility for libraries and applications that need to support versions
+older than 19.0.0. Whenever using this in conjunction with server.close,
+calling this after server.close is recommended as to avoid race
+conditions where new connections are created between a call to this and a
+call to server.close.
+
+The default is now set to the minimum between 60000 (60 seconds) or requestTimeout.
+
+Added in: v11.3.0, v10.14.0
+
+Limit the amount of time the parser will wait to receive the complete HTTP
+headers.
+
+If the timeout expires, the server responds with status 408 without
+forwarding the request to the request listener and then closes the connection.
+
+It must be set to a non-zero value (e.g. 120 seconds) to protect against
+potential Denial-of-Service attacks in case the server is deployed without a
+reverse proxy in front.
+
+Starts the HTTP server listening for connections.
+This method is identical to server.listen() from net.Server.
+
+Limits maximum incoming headers count. If set to 0, no limit will be applied.
+
+The default request timeout changed from no timeout to 300s (5 minutes).
+
+Added in: v14.11.0
+
+Sets the timeout value in milliseconds for receiving the entire request from
+the client.
+
+If the timeout expires, the server responds with status 408 without
+forwarding the request to the request listener and then closes the connection.
+
+It must be set to a non-zero value (e.g. 120 seconds) to protect against
+potential Denial-of-Service attacks in case the server is deployed without a
+reverse proxy in front.
+
+The default timeout changed from 120s to 0 (no timeout).
+
+Added in: v0.9.12
+
+Sets the timeout value for sockets, and emits a 'timeout' event on
+the Server object, passing the socket as an argument, if a timeout
+occurs.
+
+If there is a 'timeout' event listener on the Server object, then it
+will be called with the timed-out socket as an argument.
+
+By default, the Server does not timeout sockets. However, if a callback
+is assigned to the Server's 'timeout' event, timeouts must be handled
+explicitly.
+
+The maximum number of requests socket can handle
+before closing keep alive connection.
+
+A value of 0 will disable the limit.
+
+When the limit is reached it will set the Connection header value to close,
+but will not actually close the connection, subsequent requests sent
+after the limit is reached will get 503 Service Unavailable as a response.
+
+The default timeout changed from 120s to 0 (no timeout).
+
+Added in: v0.9.12
+
+The number of milliseconds of inactivity before a socket is presumed
+to have timed out.
+
+A value of 0 will disable the timeout behavior on incoming connections.
+
+The socket timeout logic is set up on connection, so changing this
+value only affects new connections to the server, not any existing connections.
+
+The number of milliseconds of inactivity a server needs to wait for additional
+incoming data, after it has finished writing the last response, before a socket
+will be destroyed.
+
+This timeout value is combined with the
+server.keepAliveTimeoutBuffer option to determine the actual socket
+timeout, calculated as:
+socketTimeout = keepAliveTimeout + keepAliveTimeoutBuffer
+If the server receives new data before the keep-alive timeout has fired, it
+will reset the regular inactivity timeout, i.e., server.timeout.
+
+A value of 0 will disable the keep-alive timeout behavior on incoming
+connections.
+A value of 0 makes the HTTP server behave similarly to Node.js versions prior
+to 8.0.0, which did not have a keep-alive timeout.
+
+The socket timeout logic is set up on connection, so changing this value only
+affects new connections to the server, not any existing connections.
+
+An additional buffer time added to the
+server.keepAliveTimeout to extend the internal socket timeout.
+
+This buffer helps reduce connection reset (ECONNRESET) errors by increasing
+the socket timeout slightly beyond the advertised keep-alive timeout.
+
+This option applies only to new incoming connections.
+
+No longer experimental.
+
+Added in: v20.4.0
+
+Calls server.close() and returns a promise that fulfills when the
+server has closed.
+
+This object is created internally by an HTTP server, not by the user. It is
+passed as the second parameter to the 'request' event.
+
+Indicates that the response is completed, or its underlying connection was
+terminated prematurely (before the response completion).
+
+Emitted when the response has been sent. More specifically, this event is
+emitted when the last segment of the response headers and body have been
+handed off to the operating system for transmission over the network. It
+does not imply that the client has received anything yet.
+
+This method adds HTTP trailing headers (a header but at the end of the
+message) to the response.
+
+Trailers will only be emitted if chunked encoding is used for the
+response; if it is not (e.g. if the request was HTTP/1.0), they will
+be silently discarded.
+
+HTTP requires the Trailer header to be sent in order to
+emit trailers, with a list of the header fields in its value. E.g.,
+
+Attempting to set a header field name or value that contains invalid characters
+will result in a TypeError being thrown.
+
+See response.socket.
+
+See writable.cork().
+
+The data parameter can now be a Uint8Array.
+
+This method now returns a reference to ServerResponse.
+
+Added in: v0.1.90
+
+This method signals to the server that all of the response headers and body
+have been sent; that server should consider this message complete.
+The method, response.end(), MUST be called on each response.
+
+If data is specified, it is similar in effect to calling
+response.write(data, encoding) followed by response.end(callback).
+
+If callback is specified, it will be called when the response stream
+is finished.
+
+The response.finished property will be true if response.end()
+has been called.
+
+Flushes the response headers. See also: request.flushHeaders().
+
+Reads out a header that's already been queued but not sent to the client.
+The name is case-insensitive. The type of the return value depends
+on the arguments provided to response.setHeader().
+
+Returns an array containing the unique names of the current outgoing headers.
+All header names are lowercase.
+
+Returns a shallow copy of the current outgoing headers. Since a shallow copy
+is used, array values may be mutated without additional calls to various
+header-related http module methods. The keys of the returned object are the
+header names and the values are the respective header values. All header names
+are lowercase.
+
+The object returned by the response.getHeaders() method does not
+prototypically inherit from the JavaScript Object. This means that typical
+Object methods such as obj.toString(), obj.hasOwnProperty(), and others
+are not defined and will not work.
+
+Returns true if the header identified by name is currently set in the
+outgoing headers. The header name matching is case-insensitive.
+
+Boolean (read-only). True if headers were sent, false otherwise.
+
+Removes a header that's queued for implicit sending.
+
+A reference to the original HTTP request object.
+
+When true, the Date header will be automatically generated and sent in
+the response if it is not already present in the headers. Defaults to true.
+
+This should only be disabled for testing; HTTP requires the Date header
+in responses.
+
+Returns the response object.
+
+Sets a single header value for implicit headers. If this header already exists
+in the to-be-sent headers, its value will be replaced. Use an array of strings
+here to send multiple headers with the same name. Non-string values will be
+stored without modification. Therefore, response.getHeader() may return
+non-string values. However, the non-string values will be converted to strings
+for network transmission. The same response object is returned to the caller,
+to enable call chaining.
+
+or
+
+Attempting to set a header field name or value that contains invalid characters
+will result in a TypeError being thrown.
+
+When headers have been set with response.setHeader(), they will be merged
+with any headers passed to response.writeHead(), with the headers passed
+to response.writeHead() given precedence.
+
+If response.writeHead() method is called and this method has not been
+called, it will directly write the supplied header values onto the network
+channel without caching internally, and the response.getHeader() on the
+header will not yield the expected result. If progressive population of headers
+is desired with potential future retrieval and modification, use
+response.setHeader() instead of response.writeHead().
+
+Sets the Socket's timeout value to msecs. If a callback is
+provided, then it is added as a listener on the 'timeout' event on
+the response object.
+
+If no 'timeout' listener is added to the request, the response, or
+the server, then sockets are destroyed when they time out. If a handler is
+assigned to the request, the response, or the server's 'timeout' events,
+timed out sockets must be handled explicitly.
+
+Reference to the underlying socket. Usually users will not want to access
+this property. In particular, the socket will not emit 'readable' events
+because of how the protocol parser attaches to the socket. After
+response.end(), the property is nulled.
+
+This property is guaranteed to be an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specified a socket
+type other than <net.Socket>.
+
+When using implicit headers (not calling response.writeHead() explicitly),
+this property controls the status code that will be sent to the client when
+the headers get flushed.
+
+After response header was sent to the client, this property indicates the
+status code which was sent out.
+
+When using implicit headers (not calling response.writeHead() explicitly),
+this property controls the status message that will be sent to the client when
+the headers get flushed. If this is left as undefined then the standard
+message for the status code will be used.
+
+After response header was sent to the client, this property indicates the
+status message which was sent out.
+
+If set to true, Node.js will check whether the Content-Length
+header value and the size of the body, in bytes, are equal.
+Mismatching the Content-Length header value will result
+in an Error being thrown, identified by code: 'ERR_HTTP_CONTENT_LENGTH_MISMATCH'.
+
+See writable.uncork().
+
+Is true after response.end() has been called. This property
+does not indicate whether the data has been flushed, for this use
+response.writableFinished instead.
+
+Is true if all data has been flushed to the underlying system, immediately
+before the 'finish' event is emitted.
+
+The chunk parameter can now be a Uint8Array.
+
+Added in: v0.1.29
+
+If this method is called and response.writeHead() has not been called,
+it will switch to implicit header mode and flush the implicit headers.
+
+This sends a chunk of the response body. This method may
+be called multiple times to provide successive parts of the body.
+
+If rejectNonStandardBodyWrites is set to true in createServer
+then writing to the body is not allowed when the request method or response
+status do not support content. If an attempt is made to write to the body for a
+HEAD request or as part of a 204 or 304response, a synchronous Error
+with the code ERR_HTTP_BODY_NOT_ALLOWED is thrown.
+
+chunk can be a string or a buffer. If chunk is a string,
+the second parameter specifies how to encode it into a byte stream.
+callback will be called when this chunk of data is flushed.
+
+This is the raw HTTP body and has nothing to do with higher-level multi-part
+body encodings that may be used.
+
+The first time response.write() is called, it will send the buffered
+header information and the first chunk of the body to the client. The second
+time response.write() is called, Node.js assumes data will be streamed,
+and sends the new data separately. That is, the response is buffered up to the
+first chunk of the body.
+
+Returns true if the entire data was flushed successfully to the kernel
+buffer. Returns false if all or part of the data was queued in user memory.
+'drain' will be emitted when the buffer is free again.
+
+Sends an HTTP/1.1 100 Continue message to the client, indicating that
+the request body should be sent. See the 'checkContinue' event on
+Server.
+
+Allow passing hints as an object.
+
+Added in: v18.11.0
+
+Sends an HTTP/1.1 103 Early Hints message to the client with a Link header,
+indicating that the user agent can preload/preconnect the linked resources.
+The hints is an object containing the values of headers to be sent with
+early hints message. The optional callback argument will be called when
+the response message has been written.
+
+Example
+
+Allow passing headers as an array.
+
+Return this from writeHead() to allow chaining with end().
+
+A RangeError is thrown if statusCode is not a number in the range [100, 999].
+
+Added in: v0.1.30
+
+Sends a response header to the request. The status code is a 3-digit HTTP
+status code, like 404. The last argument, headers, are the response headers.
+Optionally one can give a human-readable statusMessage as the second
+argument.
+
+headers may be an Array where the keys and values are in the same list.
+It is not a list of tuples. So, the even-numbered offsets are key values,
+and the odd-numbered offsets are the associated values. The array is in the same
+format as request.rawHeaders.
+
+Returns a reference to the ServerResponse, so that calls can be chained.
+
+This method must only be called once on a message and it must
+be called before response.end() is called.
+
+If response.write() or response.end() are called before calling
+this, the implicit/mutable headers will be calculated and call this function.
+
+When headers have been set with response.setHeader(), they will be merged
+with any headers passed to response.writeHead(), with the headers passed
+to response.writeHead() given precedence.
+
+If this method is called and response.setHeader() has not been called,
+it will directly write the supplied header values onto the network channel
+without caching internally, and the response.getHeader() on the header
+will not yield the expected result. If progressive population of headers is
+desired with potential future retrieval and modification, use
+response.setHeader() instead.
+
+Content-Length is read in bytes, not characters. Use
+Buffer.byteLength() to determine the length of the body in bytes. Node.js
+will check whether Content-Length and the length of the body which has
+been transmitted are equal or not.
+
+Attempting to set a header field name or value that contains invalid characters
+will result in a TypeError being thrown.
+
+Sends a HTTP/1.1 102 Processing message to the client, indicating that
+the request body should be sent.
+
+The destroyed value returns true after the incoming data is consumed.
+
+The readableHighWaterMark value mirrors that of the socket.
+
+Added in: v0.1.17
+
+An IncomingMessage object is created by http.Server or
+http.ClientRequest and passed as the first argument to the 'request'
+and 'response' event respectively. It may be used to access response
+status, headers, and data.
+
+Different from its socket value which is a subclass of <stream.Duplex>, the
+IncomingMessage itself extends <stream.Readable> and is created separately to
+parse and emit the incoming HTTP headers and payload, as the underlying socket
+may be reused multiple times in case of keep-alive.
+
+Emitted when the request has been aborted.
+
+The close event is now emitted when the request has been completed and not when the underlying socket is closed.
+
+Added in: v0.4.2
+
+Emitted when the request has been completed.
+
+The message.aborted property will be true if the request has
+been aborted.
+
+The message.complete property will be true if a complete HTTP message has
+been received and successfully parsed.
+
+This property is particularly useful as a means of determining if a client or
+server fully transmitted a message before a connection was terminated:
+
+Alias for message.socket.
+
+The function returns this for consistency with other Readable streams.
+
+Added in: v0.3.0
+
+Calls destroy() on the socket that received the IncomingMessage. If error
+is provided, an 'error' event is emitted on the socket and error is passed
+as an argument to any listeners on the event.
+
+The joinDuplicateHeaders option in the http.request() and http.createServer() functions ensures that duplicate headers are not discarded, but rather combined using a comma separator, in accordance with RFC 9110 Section 5.3.
+
+message.headers is now lazily computed using an accessor property on the prototype and is no longer enumerable.
+
+Added in: v0.1.5
+
+The request/response headers object.
+
+Key-value pairs of header names and values. Header names are lower-cased.
+
+Duplicates in raw headers are handled in the following ways, depending on the
+header name:
+
+Similar to message.headers, but there is no join logic and the values are
+always arrays of strings, even for headers received just once.
+
+In case of server request, the HTTP version sent by the client. In the case of
+client response, the HTTP version of the connected-to server.
+Probably either '1.1' or '1.0'.
+
+Also message.httpVersionMajor is the first integer and
+message.httpVersionMinor is the second.
+
+Only valid for request obtained from http.Server.
+
+The request method as a string. Read only. Examples: 'GET', 'DELETE'.
+
+The raw request/response headers list exactly as they were received.
+
+The keys and values are in the same list. It is not a
+list of tuples. So, the even-numbered offsets are key values, and the
+odd-numbered offsets are the associated values.
+
+Header names are not lowercased, and duplicates are not merged.
+
+The raw request/response trailer keys and values exactly as they were
+received. Only populated at the 'end' event.
+
+Calls message.socket.setTimeout(msecs, callback).
+
+The net.Socket object associated with the connection.
+
+With HTTPS support, use request.socket.getPeerCertificate() to obtain the
+client's authentication details.
+
+This property is guaranteed to be an instance of the <net.Socket> class,
+a subclass of <stream.Duplex>, unless the user specified a socket
+type other than <net.Socket> or internally nulled.
+
+Only valid for response obtained from http.ClientRequest.
+
+The 3-digit HTTP response status code. E.G. 404.
+
+Only valid for response obtained from http.ClientRequest.
+
+The HTTP response status message (reason phrase). E.G. OK or Internal Server Error.
+
+The request/response trailers object. Only populated at the 'end' event.
+
+Similar to message.trailers, but there is no join logic and the values are
+always arrays of strings, even for headers received just once.
+Only populated at the 'end' event.
+
+Only valid for request obtained from http.Server.
+
+Request URL string. This contains only the URL that is present in the actual
+HTTP request. Take the following request:
+
+To parse the URL into its parts:
+
+When request.url is '/status?name=ryan' and process.env.HOST is undefined:
+
+Ensure that you set process.env.HOST to the server's host name, or consider
+replacing this part entirely. If using req.headers.host, ensure proper
+validation is used, as clients may specify a custom Host header.
+
+This class serves as the parent class of http.ClientRequest
+and http.ServerResponse. It is an abstract outgoing message from
+the perspective of the participants of an HTTP transaction.
+
+Emitted when the buffer of the message is free again.
+
+Emitted when the transmission is finished successfully.
+
+Emitted after outgoingMessage.end() is called.
+When the event is emitted, all data has been processed but not necessarily
+completely flushed.
+
+Adds HTTP trailers (headers but at the end of the message) to the message.
+
+Trailers will only be emitted if the message is chunked encoded. If not,
+the trailers will be silently discarded.
+
+HTTP requires the Trailer header to be sent to emit trailers,
+with a list of header field names in its value, e.g.
+
+Attempting to set a header field name or value that contains invalid characters
+will result in a TypeError being thrown.
+
+Append a single header value to the header object.
+
+If the value is an array, this is equivalent to calling this method multiple
+times.
+
+If there were no previous values for the header, this is equivalent to calling
+outgoingMessage.setHeader(name, value).
+
+Depending of the value of options.uniqueHeaders when the client request or the
+server were created, this will end up in the header being sent multiple times or
+a single time with values joined using ; .
+
+Alias of outgoingMessage.socket.
+
+See writable.cork().
+
+Destroys the message. Once a socket is associated with the message
+and is connected, that socket will be destroyed as well.
+
+The chunk parameter can now be a Uint8Array.
+
+add callback argument.
+
+Added in: v0.1.90
+
+Finishes the outgoing message. If any parts of the body are unsent, it will
+flush them to the underlying system. If the message is chunked, it will
+send the terminating chunk 0\r\n\r\n, and send the trailers (if any).
+
+If chunk is specified, it is equivalent to calling
+outgoingMessage.write(chunk, encoding), followed by
+outgoingMessage.end(callback).
+
+If callback is provided, it will be called when the message is finished
+(equivalent to a listener of the 'finish' event).
+
+Flushes the message headers.
+
+For efficiency reason, Node.js normally buffers the message headers
+until outgoingMessage.end() is called or the first chunk of message data
+is written. It then tries to pack the headers and data into a single TCP
+packet.
+
+It is usually desired (it saves a TCP round-trip), but not when the first
+data is not sent until possibly much later. outgoingMessage.flushHeaders()
+bypasses the optimization and kickstarts the message.
+
+Gets the value of the HTTP header with the given name. If that header is not
+set, the returned value will be undefined.
+
+Returns an array containing the unique names of the current outgoing headers.
+All names are lowercase.
+
+Returns a shallow copy of the current outgoing headers. Since a shallow
+copy is used, array values may be mutated without additional calls to
+various header-related HTTP module methods. The keys of the returned
+object are the header names and the values are the respective header
+values. All header names are lowercase.
+
+The object returned by the outgoingMessage.getHeaders() method does
+not prototypically inherit from the JavaScript Object. This means that
+typical Object methods such as obj.toString(), obj.hasOwnProperty(),
+and others are not defined and will not work.
+
+Returns true if the header identified by name is currently set in the
+outgoing headers. The header name is case-insensitive.
+
+Read-only. true if the headers were sent, otherwise false.
+
+Overrides the stream.pipe() method inherited from the legacy Stream class
+which is the parent class of http.OutgoingMessage.
+
+Calling this method will throw an Error because outgoingMessage is a
+write-only stream.
+
+Removes a header that is queued for implicit sending.
+
+Sets a single header value. If the header already exists in the to-be-sent
+headers, its value will be replaced. Use an array of strings to send multiple
+headers with the same name.
+
+Sets multiple header values for implicit headers.
+headers must be an instance of Headers or Map,
+if a header already exists in the to-be-sent headers,
+its value will be replaced.
+
+or
+
+When headers have been set with outgoingMessage.setHeaders(),
+they will be merged with any headers passed to response.writeHead(),
+with the headers passed to response.writeHead() given precedence.
+
+Once a socket is associated with the message and is connected,
+socket.setTimeout() will be called with msecs as the first parameter.
+
+Reference to the underlying socket. Usually, users will not want to access
+this property.
+
+After calling outgoingMessage.end(), this property will be nulled.
+
+See writable.uncork()
+
+The number of times outgoingMessage.cork() has been called.
+
+Is true if outgoingMessage.end() has been called. This property does
+not indicate whether the data has been flushed. For that purpose, use
+message.writableFinished instead.
+
+Is true if all data has been flushed to the underlying system.
+
+The highWaterMark of the underlying socket if assigned. Otherwise, the default
+buffer level when writable.write() starts returning false (16384).
+
+The number of buffered bytes.
+
+Always false.
+
+The chunk parameter can now be a Uint8Array.
+
+The callback argument was added.
+
+Added in: v0.1.29
+
+Sends a chunk of the body. This method can be called multiple times.
+
+The encoding argument is only relevant when chunk is a string. Defaults to
+'utf8'.
+
+The callback argument is optional and will be called when this chunk of data
+is flushed.
+
+Returns true if the entire data was flushed successfully to the kernel
+buffer. Returns false if all or part of the data was queued in the user
+memory. The 'drain' event will be emitted when the buffer is free again.
+
+A list of the HTTP methods that are supported by the parser.
+
+A collection of all the standard HTTP response status codes, and the
+short description of each. For example, http.STATUS_CODES[404] === 'Not Found'.
+
+Add optimizeEmptyRequests option.
+
+The shouldUpgradeCallback option is now supported.
+
+The highWaterMark option is supported now.
+
+The requestTimeout, headersTimeout, keepAliveTimeout, and connectionsCheckingInterval options are supported now.
+
+The noDelay option now defaults to true.
+
+The noDelay, keepAlive and keepAliveInitialDelay options are supported now.
+
+The maxHeaderSize option is supported now.
+
+The insecureHTTPParser option is supported now.
+
+The options argument is supported now.
+
+Added in: v0.1.13
+
+options <Object>
+
+requestListener <Function>
+
+Returns: <http.Server>
+
+Returns a new instance of http.Server.
+
+The requestListener is a function which is automatically
+added to the 'request' event.
+
+The url parameter can now be passed along with a separate options object.
+
+The options parameter can be a WHATWG URL object.
+
+Added in: v0.3.6
+
+Since most requests are GET requests without bodies, Node.js provides this
+convenience method. The only difference between this method and
+http.request() is that it sets the method to GET by default and calls req.end()
+automatically. The callback must take care to consume the response
+data for reasons stated in http.ClientRequest section.
+
+The callback is invoked with a single argument that is an instance of
+http.IncomingMessage.
+
+JSON fetching example:
+
+The agent now uses HTTP Keep-Alive and a 5 second timeout by default.
+
+Added in: v0.5.9
+
+Global instance of Agent which is used as the default for all HTTP client
+requests. Diverges from a default Agent configuration by having keepAlive
+enabled and a timeout of 5 seconds.
+
+Read-only property specifying the maximum allowed size of HTTP headers in bytes.
+Defaults to 16 KiB. Configurable using the --max-http-header-size CLI
+option.
+
+This can be overridden for servers and client requests by passing the
+maxHeaderSize option.
+
+When using a URL object parsed username and password will now be properly URI decoded.
+
+It is possible to abort a request with an AbortSignal.
+
+The maxHeaderSize option is supported now.
+
+The insecureHTTPParser option is supported now.
+
+The url parameter can now be passed along with a separate options object.
+
+The options parameter can be a WHATWG URL object.
+
+Added in: v0.3.6
+
+options in socket.connect() are also supported.
+
+Node.js maintains several connections per server to make HTTP requests.
+This function allows one to transparently issue requests.
+
+url can be a string or a URL object. If url is a
+string, it is automatically parsed with new URL(). If it is a URL
+object, it will be automatically converted to an ordinary options object.
+
+If both url and options are specified, the objects are merged, with the
+options properties taking precedence.
+
+The optional callback parameter will be added as a one-time listener for
+the 'response' event.
+
+http.request() returns an instance of the http.ClientRequest
+class. The ClientRequest instance is a writable stream. If one needs to
+upload a file with a POST request, then write to the ClientRequest object.
+
+In the example req.end() was called. With http.request() one
+must always call req.end() to signify the end of the request -
+even if there is no data being written to the request body.
+
+If any error is encountered during the request (be that with DNS resolution,
+TCP level errors, or actual HTTP parse errors) an 'error' event is emitted
+on the returned request object. As with all 'error' events, if no listeners
+are registered the error will be thrown.
+
+There are a few special headers that should be noted.
+
+Sending a 'Connection: keep-alive' will notify Node.js that the connection to
+the server should be persisted until the next request.
+
+Sending a 'Content-Length' header will disable the default chunked encoding.
+
+Sending an 'Expect' header will immediately send the request headers.
+Usually, when sending 'Expect: 100-continue', both a timeout and a listener
+for the 'continue' event should be set. See RFC 2616 Section 8.2.3 for more
+information.
+
+Sending an Authorization header will override using the auth option
+to compute basic authentication.
+
+Example using a URL as options:
+
+In a successful request, the following events will be emitted in the following
+order:
+
+In the case of a connection error, the following events will be emitted:
+
+In the case of a premature connection close before the response is received,
+the following events will be emitted in the following order:
+
+In the case of a premature connection close after the response is received,
+the following events will be emitted in the following order:
+
+If req.destroy() is called before a socket is assigned, the following
+events will be emitted in the following order:
+
+If req.destroy() is called before the connection succeeds, the following
+events will be emitted in the following order:
+
+If req.destroy() is called after the response is received, the following
+events will be emitted in the following order:
+
+If req.abort() is called before a socket is assigned, the following
+events will be emitted in the following order:
+
+If req.abort() is called before the connection succeeds, the following
+events will be emitted in the following order:
+
+If req.abort() is called after the response is received, the following
+events will be emitted in the following order:
+
+Setting the timeout option or using the setTimeout() function will
+not abort the request or do anything besides add a 'timeout' event.
+
+Passing an AbortSignal and then calling abort() on the corresponding
+AbortController will behave the same way as calling .destroy() on the
+request. Specifically, the 'error' event will be emitted with an error with
+the message 'AbortError: The operation was aborted', the code 'ABORT_ERR'
+and the cause, if one was provided.
+
+The label parameter is added.
+
+Added in: v14.3.0
+
+Performs the low-level validations on the provided name that are done when
+res.setHeader(name, value) is called.
+
+Passing illegal value as name will result in a TypeError being thrown,
+identified by code: 'ERR_INVALID_HTTP_TOKEN'.
+
+It is not necessary to use this method before passing headers to an HTTP request
+or response. The HTTP module will automatically validate such headers.
+
+Example:
+
+Performs the low-level validations on the provided value that are done when
+res.setHeader(name, value) is called.
+
+Passing illegal value as value will result in a TypeError being thrown.
+
+It is not necessary to use this method before passing headers to an HTTP request
+or response. The HTTP module will automatically validate such headers.
+
+Examples:
+
+Set the maximum number of idle HTTP parsers.
+
+Dynamically resets the global configurations to enable built-in proxy support for
+fetch() and http.request()/https.request() at runtime, as an alternative
+to using the --use-env-proxy flag or NODE_USE_ENV_PROXY environment variable.
+It can also be used to override settings configured from the environment variables.
+
+As this function resets the global configurations, any previously configured
+http.globalAgent, https.globalAgent or undici global dispatcher would be
+overridden after this function is invoked. It's recommended to invoke it before any
+requests are made and avoid invoking it in the middle of any requests.
+
+See Built-in Proxy Support for details on proxy URL formats and NO_PROXY
+syntax.
+
+A browser-compatible implementation of <WebSocket>.
+
+When Node.js creates the global agent, if the NODE_USE_ENV_PROXY environment variable is
+set to 1 or --use-env-proxy is enabled, the global agent will be constructed
+with proxyEnv: process.env, enabling proxy support based on the environment variables.
+
+To enable proxy support dynamically and globally, use http.setGlobalProxyFromEnv().
+
+Custom agents can also be created with proxy support by passing a
+proxyEnv option when constructing the agent. The value can be process.env
+if they just want to inherit the configuration from the environment variables,
+or an object with specific setting overriding the environment.
+
+The following properties of the proxyEnv are checked to configure proxy
+support.
+
+If the request is made to a Unix domain socket, the proxy settings will be ignored.
+
+Proxy URLs can use either HTTP or HTTPS protocols:
+
+The NO_PROXY environment variable supports several formats:
+
+Multiple entries should be separated by commas.
+
+To start a Node.js process with proxy support enabled for all requests sent
+through the default global agent, either use the NODE_USE_ENV_PROXY environment
+variable:
+
+Or the --use-env-proxy flag.
+
+To enable proxy support dynamically and globally with process.env (the default option of http.setGlobalProxyFromEnv()):
+
+To enable proxy support dynamically and globally with custom settings:
+
+To create a custom agent with built-in proxy support:
+
+Alternatively, the following also works:

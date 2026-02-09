@@ -1,0 +1,14 @@
+Title: PostgreSQL: Documentation: 18: Chapter 11. Indexes
+Source: https://www.postgresql.org/docs/current/indexes.html
+
+Table of Contents
+
+Indexes are a common way to enhance database performance. An index allows the database server to find and retrieve specific rows much faster than it could do without an index. But indexes also add overhead to the database system as a whole, so they should be used sensibly.
+
+If you see anything in the documentation that is not correct, does not match
+              your experience with the particular feature or requires further clarification,
+              please use
+              this form
+              to report a documentation issue.
+
+Copyright © 1996-2026 The PostgreSQL Global Development Group

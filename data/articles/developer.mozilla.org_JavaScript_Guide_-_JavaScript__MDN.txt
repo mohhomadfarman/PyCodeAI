@@ -1,0 +1,48 @@
+Title: JavaScript Guide - JavaScript | MDN
+Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide
+
+The JavaScript Guide shows you how to use JavaScript and gives an overview of the language. If you need exhaustive information about a language feature, have a look at the JavaScript reference.
+
+This Guide is divided into the following chapters.
+
+Overview: Introduction
+
+Overview: Grammar and types
+
+Overview: Control flow and error handling
+
+Overview: Loops and iteration
+
+Overview: Functions
+
+Overview: Expressions and operators
+
+Overview: Numbers and strings
+
+Overview: Representing dates & times
+
+Overview: Regular expressions
+
+Overview: Indexed collections
+
+Overview: Keyed collections
+
+Overview: Working with objects
+
+Overview: Using classes
+
+Overview: Promises
+
+Overview: Typed arrays
+
+Overview: Iterators and generators
+
+Overview: JavaScript resource management
+
+Overview: Internationalization
+
+Overview: JavaScript modules
+
+After you have learned all fundamental features of JavaScript, you can explore some more niche features, or dive deeper into the language's mechanisms and concepts.
+
+This page was last modified on Nov 7, 2025 by MDN contributors.

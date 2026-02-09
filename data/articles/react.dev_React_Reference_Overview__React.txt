@@ -1,0 +1,16 @@
+Title: React Reference Overview – React
+Source: https://react.dev/reference/react
+
+This section provides detailed reference documentation for working with React. For an introduction to React, please visit the Learn section.
+
+The React reference documentation is broken down into functional subsections:
+
+Programmatic React features:
+
+React DOM contains features that are only supported for web applications (which run in the browser DOM environment). This section is broken into the following:
+
+The React Compiler is a build-time optimization tool that automatically memoizes your React components and values:
+
+The ESLint plugin for React Hooks helps enforce the Rules of React:
+
+React has idioms — or rules — for how to express patterns in a way that is easy to understand and yields high-quality applications:

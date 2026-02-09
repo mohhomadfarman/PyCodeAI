@@ -1,0 +1,428 @@
+Title: Hover, focus, and other states - Core concepts - Tailwind CSS
+Source: https://tailwindcss.com/docs/hover-focus-and-other-states
+
+Core concepts
+
+Using utilities to style elements on hover, focus, and more.
+
+Every utility class in Tailwind can be applied conditionally by adding a variant to the beginning of the class name that describes the condition you want to target.
+
+For example, to apply the bg-sky-700 class on hover, use the hover:bg-sky-700 class:
+
+Hover over this button to see the background color change
+
+When writing CSS the traditional way, a single class name would do different things based on the current state:
+
+Traditionally the same class name applies different styles on hover
+
+In Tailwind, rather than adding the styles for a hover state to an existing class, you add another class to the element that only does something on hover:
+
+In Tailwind, separate classes are used for the default state and the hover state
+
+Notice how hover:bg-sky-700 only defines styles for the :hover state? It does nothing by default, but as soon as you hover over an element with that class, the background color will change to sky-700.
+
+This is what we mean when we say a utility class can be applied conditionally — by using variants you can control exactly how your design behaves in different states, without ever leaving your HTML.
+
+Tailwind includes variants for just about everything you'll ever need, including:
+
+These variants can even be stacked to target more specific situations, for example changing the background color in dark mode, at the medium breakpoint, on hover:
+
+In this guide you'll learn about every variant available in the framework, how to use them with your own custom classes, and even how to create your own.
+
+Style elements on hover, focus, and active using the hover, focus, and active variants:
+
+Try interacting with this button to see the hover, focus, and active states
+
+Tailwind also includes variants for other interactive states like :visited, :focus-within, :focus-visible, and more.
+
+See the pseudo-class reference for a complete list of available pseudo-class variants.
+
+Style an element when it is the first-child or last-child using the first and last variants:
+
+Kristen Ramos
+
+kristen.ramos@example.com
+
+Floyd Miles
+
+floyd.miles@example.com
+
+Courtney Henry
+
+courtney.henry@example.com
+
+Ted Fox
+
+ted.fox@example.com
+
+You can also style an element when it's an odd or even child using the odd and even variants:
+
+Use the nth-* and nth-last-* variants to style children based on their position in the list:
+
+You can pass any number you want to these by default, and use arbitrary values for more complex expressions like nth-[2n+1_of_li].
+
+Tailwind also includes variants for other structural pseudo-classes like :only-child, :first-of-type, :empty, and more.
+
+See the pseudo-class reference for a complete list of available pseudo-class variants.
+
+Style form elements in different states using variants like required, invalid, and disabled:
+
+Try making the email address valid to see the styles change
+
+Using variants for this sort of thing can reduce the amount of conditional logic in your templates, letting you use the same set of classes regardless of what state an input is in and letting the browser apply the right styles for you.
+
+Tailwind also includes variants for other form states like :read-only, :indeterminate, :checked, and more.
+
+See the pseudo-class reference for a complete list of available pseudo-class variants.
+
+Use the has-* variant to style an element based on the state or content of its descendants:
+
+You can use has-* with a pseudo-class, like has-[:focus], to style an element based on the state of its descendants. You can also use element selectors, like has-[img] or has-[a], to style an element based on the content of its descendants.
+
+If you need to style an element based on the descendants of a parent element, you can mark the parent with the group class and use the group-has-* variant to style the target element:
+
+Product Designer at planeteria.tech
+
+Just happy to be here.
+
+A multidisciplinary designer, working at the intersection of art and technology. alex-reed.com
+
+Pushing pixels. Slinging divs.
+
+If you need to style an element based on the descendants of a sibling element, you can mark the sibling with the peer class and use the peer-has-* variant to style the target element:
+
+Use the not- variant to style an element when a condition is not true.
+
+It's particularly powerful when combined with other pseudo-class variants, for example combining not-focus: with hover: to only apply hover styles when an element is not focused:
+
+Try focusing on the button and then hovering over it
+
+You can also combine the not- variant with media query variants like forced-colors or supports to only style an element when something about the user's environment is not true:
+
+When you need to style an element based on the state of some parent element, mark the parent with the group class, and use group-* variants like group-hover to style the target element:
+
+Hover over the card to see both text elements change color
+
+Create a new project from a variety of starting templates.
+
+This pattern works with every pseudo-class variant, for example group-focus, group-active, or even group-odd.
+
+When nesting groups, you can style something based on the state of a specific parent group by giving that parent a unique group name using a group/{name} class, and including that name in variants using classes like group-hover/{name}:
+
+Groups can be named however you like and don’t need to be configured in any way — just name your groups directly in your markup and Tailwind will automatically generate the necessary CSS.
+
+You can create one-off group-* variants on the fly by providing your own selector as an arbitrary value between square brackets:
+
+For more control, you can use the & character to mark where .group should end up in the final selector relative to the selector you are passing in:
+
+The in-* variant works similarly to group except you don't need to add group to the parent element:
+
+The in-* variant responds to state changes in any parent, so if you want more fine-grained control you'll need to use group instead.
+
+When you need to style an element based on the state of a sibling element, mark the sibling with the peer class, and use peer-* variants like peer-invalid to style the target element:
+
+Try making the email address valid to see the warning disappear
+
+Please provide a valid email address.
+
+This makes it possible to do all sorts of neat tricks, like floating labels for example without any JS.
+
+This pattern works with every pseudo-class variant, for example peer-focus, peer-required, and peer-disabled.
+
+It's important to note that the peer marker can only be used on previous siblings because of how the subsequent-sibling combinator works in CSS:
+
+Won't work, only previous siblings can be marked as peers
+
+When using multiple peers, you can style something on the state of a specific peer by giving that peer a unique name using a peer/{name} class, and including that name in variants using classes like peer-checked/{name}:
+
+Peers can be named however you like and don’t need to be configured in any way — just name your peers directly in your markup and Tailwind will automatically generate the necessary CSS.
+
+You can create one-off peer-* variants on the fly by providing your own selector as an arbitrary value between square brackets:
+
+For more control, you can use the & character to mark where .peer should end up in the final selector relative to the selector you are passing in:
+
+Style the ::before and ::after pseudo-elements using the before and after variants:
+
+When using these variants, Tailwind will automatically add content: '' by default so you don't have to specify it unless you want a different value:
+
+It's worth noting that you don't really need ::before and ::after pseudo-elements for most things in Tailwind projects — it's usually simpler to just use a real HTML element.
+
+For example, here's the same design from above but using a <span> instead of the ::before pseudo-element, which is a little easier to read and is actually less code:
+
+Save before and after for situations where it's important that the content of the pseudo-element is not actually in the DOM and can't be selected by the user.
+
+Style the placeholder text of any input or textarea using the placeholder variant:
+
+Style the button in file inputs using the file variant:
+
+Style the counters or bullets in lists using the marker variant:
+
+We've designed the marker variant to be inheritable, so although you can use it directly on an <li> element, you can also use it on a parent to avoid repeating yourself.
+
+Style the active text selection using the selection variant:
+
+Try selecting some of this text with your mouse
+
+So I started to walk into the water. I won't lie to you boys, I was terrified. But I pressed on, and as I made my way past the breakers a strange calm came over me. I don't know if it was divine intervention or the kinship of all living things but I tell you Jerry at that moment, I was a marine biologist.
+
+We've designed the selection variant to be inheritable, so you can add it anywhere in the tree and it will be applied to all descendant elements.
+
+This makes it easy to set the selection color to match your brand across your entire site:
+
+Style the first line in a block of content using the first-line variant, and the first letter using the first-letter variant:
+
+Well, let me tell you something, funny boy. Y'know that little stamp, the one that says "New York Public Library"? Well that may not mean anything to you, but that means a lot to me. One whole hell of a lot.
+
+Sure, go ahead, laugh if you want to. I've seen your type before: Flashy, making the scene, flaunting convention. Yeah, I know what you're thinking. What's this guy making such a big stink about old library books? Well, let me give you a hint, junior.
+
+Style the backdrop of a native <dialog> element using the backdrop variant:
+
+If you're using native <dialog> elements in your project, you may also want to read about styling open/closed states using the open variant.
+
+To style an element at a specific breakpoint, use responsive variants like md and lg.
+
+For example, this will render a 3-column grid on mobile, a 4-column grid on medium-width screens, and a 6-column grid on large-width screens:
+
+To style an element based on the width of a parent element instead of the viewport, use variants like @md and @lg:
+
+Check out the Responsive design documentation for an in-depth look at how these features work.
+
+The prefers-color-scheme media query tells you whether the user prefers a light theme or dark theme, and is usually configured at the operating system level.
+
+Use utilities with no variant to target light mode, and use the dark variant to provide overrides for dark mode:
+
+Light mode
+
+The Zero Gravity Pen can be used to write in any orientation, including upside-down. It even works in outer space.
+
+Dark mode
+
+The Zero Gravity Pen can be used to write in any orientation, including upside-down. It even works in outer space.
+
+Check out the Dark Mode documentation for an in-depth look at how this feature works.
+
+The prefers-reduced-motion media query tells you if the user has requested that you minimize non-essential motion.
+
+Use the motion-reduce variant to conditionally add styles when the user has requested reduced motion:
+
+Try emulating `prefers-reduced-motion: reduce` in your developer tools to hide the spinner
+
+Tailwind also includes a motion-safe variant that only adds styles when the user has not requested reduced motion. This can be useful when using the motion-reduce helper would mean having to "undo" a lot of styles:
+
+The prefers-contrast media query tells you if the user has requested more or less contrast.
+
+Use the contrast-more variant to conditionally add styles when the user has requested more contrast:
+
+Try emulating `prefers-contrast: more` in your developer tools to see the changes
+
+We need this to steal your identity.
+
+Tailwind also includes a contrast-less variant you can use to conditionally add styles when the user has requested less contrast.
+
+The forced-colors media query indicates if the user is using a forced colors mode. These modes override your site's colors with a user defined palette for text, backgrounds, links and buttons.
+
+Use the forced-colors variant to conditionally add styles when the user has enabled a forced color mode:
+
+Try emulating `forced-colors: active` in your developer tools to see the changes
+
+Cyan
+
+Blue
+
+Indigo
+
+Purple
+
+Use the not-forced-colors variant to apply styles based when the user is not using a forced colors mode:
+
+Tailwind also includes a forced color adjust utilities to opt in and out of forced colors.
+
+Use the inverted-colors variant to conditionally add styles when the user has enabled an inverted color scheme:
+
+The pointer media query tells you whether the user has a primary pointing device, like a mouse, and the accuracy of that pointing device.
+
+Use the pointer-fine variant to target an accurate pointing device, like a mouse or trackpad, or the pointer-coarse variant to target a less accurate pointing device, like a touchscreen, which can be useful for providing larger click targets on touch devices:
+
+Try emulating a touch device in your developer tools to see the changes
+
+While pointeronly targets the primary pointing device, any-pointer is used to target any of the pointing devices that might be available. Use the any-pointer-fine and any-pointer-coarse variants to provide different styles if at least one connected pointing device meets the criteria.
+
+You can use pointer-none and any-pointer-none to target the absence of a pointing device.
+
+Use the portrait and landscape variants to conditionally add styles when the viewport is in a specific orientation:
+
+Use the noscript variant to conditionally add styles based on whether the user has scripting, such as JavaScript, enabled:
+
+Use the print variant to conditionally add styles that only apply when the document is being printed:
+
+Use the supports-[...] variant to style things based on whether a certain feature is supported in the user's browser:
+
+Under the hood the supports-[...] variant generates @supports rules and takes anything you’d use with @supports (...) between the square brackets, like a property/value pair, and even expressions using and and or.
+
+For terseness, if you only need to check if a property is supported (and not a specific value), you can just specify the property name:
+
+Use the not-supports-[...] variant to style things based on whether a certain feature is not supported in the user's browser:
+
+You can configure shortcuts for common @supports rules you're using in your project by creating a new variant in the supports-* namespace:
+
+You can then use these custom supports-* variants in your project:
+
+Use the starting variant to set the appearance of an element when it is first rendered in the DOM, or transitions from display: none to visible:
+
+Use the aria-* variant to conditionally style things based on ARIA attributes.
+
+For example, to apply the bg-sky-700 class when the aria-checked attribute is set to true, use the aria-checked:bg-sky-700 class:
+
+By default we've included variants for the most common boolean ARIA attributes:
+
+You can customize which aria-* variants are available by creating a new variant:
+
+If you need to use a one-off aria variant that doesn’t make sense to include in your project, or for more complex ARIA attributes that take specific values, use square brackets to generate a property on the fly using any arbitrary value:
+
+ARIA state variants can also target parent and sibling elements using the group-aria-* and peer-aria-* variants:
+
+Use the data-* variant to conditionally apply styles based on data attributes.
+
+To check if a data attribute exists (and not a specific value), you can just specify the attribute name:
+
+If you need to check for a specific value you may use an arbitrary value:
+
+Alternatively, you can configure shortcuts for common data attributes you're using in your project by creating a new variant in the data-* namespace:
+
+You can then use these custom data-* variants in your project:
+
+Use the rtl and ltr variants to conditionally add styles in right-to-left and left-to-right modes respectively when building multi-directional layouts:
+
+Left-to-right
+
+Tom Cook
+
+Director of Operations
+
+Right-to-left
+
+تامر كرم
+
+الرئيس التنفيذي
+
+Remember, these variants are only useful if you are building a site that needs to support both left-to-right and right-to-left layouts. If you're building a site that only needs to support a single direction, you don't need these variants — just apply the styles that make sense for your content.
+
+Use the open variant to conditionally add styles when a <details> or <dialog> element is in an open state:
+
+Try toggling the disclosure to see the styles change
+
+The mug is round. The jar is round. They should call it Roundtine.
+
+This variant also targets the :popover-open pseudo-class for popovers:
+
+The inert variant lets you style elements marked with the inert attribute:
+
+Get notified when someones posts a comment on a post.
+
+Get notified when someones mentions you.
+
+This is useful for adding visual cues that make it clear that sections of content aren't interactive.
+
+While it's generally preferable to put utility classes directly on child elements, you can use the * variant in situations where you need to style direct children that you don’t have control over:
+
+It's important to note that overriding a style with a utility directly on the child itself won't work since children rules are generated after the regular ones and they have the same specificity:
+
+Won't work, children can't override styles given to them by the parent.
+
+Like *, the ** variant can be used to style children of an element. The main difference is that ** will apply styles to all descendants, not just the direct children. This is especially useful when you combine it with another variant for narrowing the thing you're selecting:
+
+Just like arbitrary values let you use custom values with your utility classes, arbitrary variants let you write custom selector variants directly in your HTML.
+
+Arbitrary variants are just format strings that represent the selector, wrapped in square brackets. For example, this arbitrary variant changes the cursor to grabbing when the element has the is-dragging class:
+
+Arbitrary variants can be stacked with built-in variants or with each other, just like the rest of the variants in Tailwind:
+
+If you need spaces in your selector, you can use an underscore. For example, this arbitrary variant selects all p elements within the element where you've added the class:
+
+You can also use at-rules like @media or @supports in arbitrary variants:
+
+With at-rule custom variants the & placeholder isn't necessary, just like when nesting with a preprocessor.
+
+If you find yourself using the same arbitrary variant multiple times in your project, it might be worth creating a custom variant using the @custom-variant directive:
+
+Now you can use the theme-midnight:<utility> variant in your HTML:
+
+Learn more about adding custom variants in the adding custom variants documentation.
+
+A quick reference table of every single variant included in Tailwind by default.
+
+This is a comprehensive list of examples for all the pseudo-class variants included in Tailwind to complement the pseudo-classes documentation at the beginning of this guide.
+
+Style an element when the user hovers over it with the mouse cursor using the hover variant:
+
+Style an element when it has focus using the focus variant:
+
+Style an element when it or one of its descendants has focus using the focus-within variant:
+
+Style an element when it has been focused using the keyboard using the focus-visible variant:
+
+Style an element when it is being pressed using the active variant:
+
+Style a link when it has already been visited using the visited variant:
+
+Style an element if its ID matches the current URL fragment using the target variant:
+
+Style an element if it's the first child using the first variant:
+
+Style an element if it's the last child using the last variant:
+
+Style an element if it's the only child using the only variant:
+
+Style an element if it's an oddly numbered child using the odd variant:
+
+Style an element if it's an evenly numbered child using the even variant:
+
+Style an element if it's the first child of its type using the first-of-type variant:
+
+Style an element if it's the last child of its type using the last-of-type variant:
+
+Style an element if it's the only child of its type using the only-of-type variant:
+
+Style an element at a specific position using the nth variant:
+
+Style an element at a specific position from the end using the nth-last variant:
+
+Style an element at a specific position, of the same type using the nth-of-type variant:
+
+Style an element at a specific position from the end, of the same type using the nth-last-of-type variant:
+
+Style an element if it has no content using the empty variant:
+
+Style an input when it's disabled using the disabled variant:
+
+Style an input when it's enabled using the enabled variant, most helpful when you only want to apply another style when an element is not disabled:
+
+Style a checkbox or radio button when it's checked using the checked variant:
+
+Style a checkbox or radio button in an indeterminate state using the indeterminate variant:
+
+Style an option, checkbox or radio button that was the default value when the page initially loaded using the default variant:
+
+Style an input when it's optional using the optional variant:
+
+Style an input when it's required using the required variant:
+
+Style an input when it's valid using the valid variant:
+
+Style an input when it's invalid using the invalid variant:
+
+Style an input when it's valid and the user has interacted with it, using the user-valid variant:
+
+Style an input when it's invalid and the user has interacted with it, using the user-invalid variant:
+
+Style an input when its value is within a specified range limit using the in-range variant:
+
+Style an input when its value is outside of a specified range limit using the out-of-range variant:
+
+Style an input when the placeholder is shown using the placeholder-shown variant:
+
+Style the content of a <details> element using the details-content variant:
+
+Style an input when it has been autofilled by the browser using the autofill variant:
+
+Style an input when it is read-only using the read-only variant:

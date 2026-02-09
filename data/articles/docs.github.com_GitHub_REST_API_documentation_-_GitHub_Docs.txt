@@ -1,0 +1,26 @@
+Title: GitHub REST API documentation - GitHub Docs
+Source: https://docs.github.com/en/rest
+
+Create integrations, retrieve data, and automate your workflows with the GitHub REST API.
+
+Get oriented to the REST API documentation.
+
+Learn how to use the GitHub REST API.
+
+You can authenticate to the REST API to access more endpoints and have a higher rate limit.
+
+Follow these best practices when using GitHub's API.
+
+Learn about REST API rate limits, how to avoid exceeding them, and what to do if you do exceed them.
+
+Learn how to diagnose and resolve common problems for the REST API.
+
+Write a script using the Octokit.js SDK to interact with the REST API.
+
+Follow these best practices to keep your API credentials and tokens secure.
+
+Using the Deployments REST API, you can build custom tooling that interacts with your server and a third-party app.
+
+You can use the REST API to build GitHub Apps that run powerful checks against code changes in a repository. You can create apps that perform continuous integration, code linting, or code scanning services and provide detailed feedback on commits.
+
+Learn how to navigate through paginated responses from the REST API.

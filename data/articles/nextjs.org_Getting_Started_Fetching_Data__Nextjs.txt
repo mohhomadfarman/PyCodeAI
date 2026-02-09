@@ -1,0 +1,80 @@
+Title: Getting Started: Fetching Data | Next.js
+Source: https://nextjs.org/docs/app/building-your-application/data-fetching
+
+This page will walk you through how you can fetch data in Server and Client Components, and how to stream components that depend on data.
+
+You can fetch data in Server Components using any asynchronous I/O, such as:
+
+To fetch data with the fetch API, turn your component into an asynchronous function, and await the fetch call. For example:
+
+Good to know:
+
+Since Server Components are rendered on the server, you can safely make database queries using an ORM or database client. Turn your component into an asynchronous function, and await the call:
+
+There are two ways to fetch data in Client Components, using:
+
+You can use React's use hook to stream data from the server to client. Start by fetching data in your Server component, and pass the promise to your Client Component as prop:
+
+Then, in your Client Component, use the use hook to read the promise:
+
+In the example above, the <Posts> component is wrapped in a <Suspense> boundary. This means the fallback will be shown while the promise is being resolved. Learn more about streaming.
+
+You can use a community library like SWR or React Query to fetch data in Client Components. These libraries have their own semantics for caching, streaming, and other features. For example, with SWR:
+
+One way to deduplicate fetch requests is with request memoization. With this mechanism, fetch calls using GET or HEAD with the same URL and options in a single render pass are combined into one request. This happens automatically, and you can opt out by passing an Abort signal to fetch.
+
+Request memoization is scoped to the lifetime of a request.
+
+You can also deduplicate fetch requests by using Next.js’ Data Cache, for example by setting cache: 'force-cache' in your fetch options.
+
+Data Cache allows sharing data across the current render pass and incoming requests.
+
+If you are not using fetch, and instead using an ORM or database directly, you can wrap your data access with the React cache function.
+
+Warning: The content below assumes the cacheComponents config option is enabled in your application. The flag was introduced in Next.js 15 canary.
+
+When you fetch data in Server Components, the data is fetched and rendered on the server for each request. If you have any slow data requests, the whole route will be blocked from rendering until all the data is fetched.
+
+To improve the initial load time and user experience, you can use streaming to break up the page's HTML into smaller chunks and progressively send those chunks from the server to the client.
+
+There are two ways you can leverage streaming in your application:
+
+You can create a loading.js file in the same folder as your page to stream the entire page while the data is being fetched. For example, to stream app/blog/page.js, add the file inside the app/blog folder.
+
+On navigation, the user will immediately see the layout and a loading state while the page is being rendered. The new content will then be automatically swapped in once rendering is complete.
+
+Behind-the-scenes, loading.js will be nested inside layout.js, and will automatically wrap the page.js file and any children below in a <Suspense> boundary.
+
+This approach works well for route segments (layouts and pages), but for more granular streaming, you can use <Suspense>.
+
+<Suspense> allows you to be more granular about what parts of the page to stream. For example, you can immediately show any page content that falls outside of the <Suspense> boundary, and stream in the list of blog posts inside the boundary.
+
+An instant loading state is fallback UI that is shown immediately to the user after navigation. For the best user experience, we recommend designing loading states that are meaningful and help users understand the app is responding. For example, you can use skeletons and spinners, or a small but meaningful part of future screens such as a cover photo, title, etc.
+
+In development, you can preview and inspect the loading state of your components using the React Devtools.
+
+Sequential data fetching happens when one request depends on data from another.
+
+For example, <Playlists> can only fetch data after <Artist> completes because it needs the artistID:
+
+In this example, <Suspense> allows the playlists to stream in after the artist data loads. However, the page still waits for the artist data before displaying anything. To prevent this, you can wrap the entire page component in a <Suspense> boundary (for example, using a loading.js file) to show a loading state immediately.
+
+Ensure your data source can resolve the first request quickly, as it blocks everything else. If you can't optimize the request further, consider caching the result if the data changes infrequently.
+
+Parallel data fetching happens when data requests in a route are eagerly initiated and start at the same time.
+
+By default, layouts and pages are rendered in parallel. So each segment starts fetching data as soon as possible.
+
+However, within any component, multiple async/await requests can still be sequential if placed after the other. For example, getAlbums will be blocked until getArtist is resolved:
+
+Start multiple requests by calling fetch, then await them with Promise.all. Requests begin as soon as fetch is called.
+
+Good to know: If one request fails when using Promise.all, the entire operation will fail. To handle this, you can use the Promise.allSettled method instead.
+
+You can preload data by creating a utility function that you eagerly call above blocking requests. <Item> conditionally renders based on the checkIsAvailable() function.
+
+You can call preload() before checkIsAvailable() to eagerly initiate <Item/> data dependencies. By the time <Item/> is rendered, its data has already been fetched.
+
+Additionally, you can use React's cache function and the server-only package to create a reusable utility function. This approach allows you to cache the data fetching function and ensure that it's only executed on the server.
+
+Was this helpful?

@@ -1,0 +1,10 @@
+Title: Next.js Docs: Pages Router | Next.js
+Source: https://nextjs.org/docs/pages
+
+You're viewing the documentation for the Pages Router. See the App Router documentation for the latest features.
+
+The Pages Router uses an intuitive file-system router to map each file to a route.
+
+Before Next.js 13, the Pages Router was the main way to create routes in Next.js. It's still supported in newer versions of Next.js, but we recommend migrating to the new App Router to leverage React's latest features.
+
+Was this helpful?

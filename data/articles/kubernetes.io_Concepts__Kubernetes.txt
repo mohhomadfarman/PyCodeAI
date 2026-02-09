@@ -1,0 +1,37 @@
+Title: Concepts | Kubernetes
+Source: https://kubernetes.io/docs/concepts/
+
+The Concepts section helps you learn about the parts of the Kubernetes system and the abstractions Kubernetes uses to represent your cluster, and helps you obtain a deeper understanding of how Kubernetes works.
+
+Kubernetes is a portable, extensible, open source platform for managing containerized workloads and services that facilitate both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are widely available.
+
+The architectural concepts behind Kubernetes.
+
+Technology for packaging an application along with its runtime dependencies.
+
+Understand Pods, the smallest deployable compute object in Kubernetes, and the higher-level abstractions that help you to run them.
+
+Concepts and resources behind networking in Kubernetes.
+
+Ways to provide both long-term and temporary storage to Pods in your cluster.
+
+Resources that Kubernetes provides for configuring Pods.
+
+Concepts for keeping your cloud-native workload secure.
+
+Manage security and best-practices with policies.
+
+Lower-level detail relevant to creating or administering a Kubernetes cluster.
+
+Kubernetes supports nodes that run Microsoft Windows.
+
+Different ways to change the behavior of your Kubernetes cluster.
+
+Was this page helpful?
+
+Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+Stack Overflow.
+Open an issue in the GitHub Repository if you want to
+report a problem
+or
+suggest an improvement.

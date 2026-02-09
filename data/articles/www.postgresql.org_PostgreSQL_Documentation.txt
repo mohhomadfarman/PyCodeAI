@@ -1,0 +1,11 @@
+Title: PostgreSQL: Documentation
+Source: https://www.postgresql.org/docs/
+
+View the manual
+
+You can view the manual for an older version or download a PDF of a manual from the below table.
+
+Looking for documentation for an older, unsupported, version? Check the
+       archive of older manuals.
+
+Copyright © 1996-2026 The PostgreSQL Global Development Group

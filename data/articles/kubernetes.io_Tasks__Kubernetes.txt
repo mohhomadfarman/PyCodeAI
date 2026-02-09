@@ -1,0 +1,52 @@
+Title: Tasks | Kubernetes
+Source: https://kubernetes.io/docs/tasks/
+
+This section of the Kubernetes documentation contains pages that
+show how to do individual tasks. A task page shows how to do a
+single thing, typically by giving a short sequence of steps.
+
+If you would like to write a task page, see
+Creating a Documentation Pull Request.
+
+Set up Kubernetes tools on your computer.
+
+Learn common tasks for administering a cluster.
+
+Perform common configuration tasks for Pods and containers.
+
+Set up monitoring and logging to troubleshoot a cluster, or debug a containerized application.
+
+Declarative and imperative paradigms for interacting with the Kubernetes API.
+
+Managing confidential settings data using Secrets.
+
+Specify configuration and other data for the Pods that run your workload.
+
+Run and manage both stateless and stateful applications.
+
+Run Jobs using parallel processing.
+
+Configure load balancing, port forwarding, or setup firewall or DNS configurations to access applications in a cluster.
+
+Understand advanced ways to adapt your Kubernetes cluster to the needs of your work environment.
+
+Understand how to protect traffic within your cluster using Transport Layer Security (TLS).
+
+Perform common tasks for managing a DaemonSet, such as performing a rolling update.
+
+Learn how to configure networking for your cluster.
+
+Extend kubectl by creating and installing kubectl plugins.
+
+Configure and manage huge pages as a schedulable resource in a cluster.
+
+Configure and schedule GPUs for use as a resource by nodes in a cluster.
+
+Was this page helpful?
+
+Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+Stack Overflow.
+Open an issue in the GitHub Repository if you want to
+report a problem
+or
+suggest an improvement.

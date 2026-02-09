@@ -1,0 +1,188 @@
+Title: Indexed collections - JavaScript | MDN
+Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections
+
+This chapter introduces collections of data which are ordered by an index value. This includes arrays and array-like constructs such as Array objects and TypedArray objects.
+
+An array is an ordered list of values that you refer to with a name and an index.
+
+For example, consider an array called emp, which contains employees' names indexed by their numerical employee number. So emp[0] would be employee number zero, emp[1] employee number one, and so on.
+
+JavaScript does not have an explicit array data type. However, you can use the predefined Array object and its methods to work with arrays in your applications. The Array object has methods for manipulating arrays in various ways, such as joining, reversing, and sorting them. It has a property for determining the array length and other properties for use with regular expressions.
+
+We will be focusing on arrays in this article, but many of the same concepts apply to typed arrays as well, since arrays and typed arrays share many similar methods. For more information on typed arrays, see the typed array guide.
+
+The following statements create equivalent arrays:
+
+element0, element1, â¦, elementN is a list of values for the array's elements. When these values are specified, the array is initialized with them as the array's elements. The array's length property is set to the number of arguments.
+
+The bracket syntax is called an "array literal" or "array initializer." It's shorter than other forms of array creation, and so is generally preferred. See Array literals for details.
+
+To create an array with non-zero length, but without any items, either of the following can be used:
+
+Note:
+In the above code, arrayLength must be a Number. Otherwise, an array with a single element (the provided value) will be created. Calling arr.length will return arrayLength, but the array doesn't contain any elements. A for...in loop will not find any property on the array.
+
+In addition to a newly defined variable as shown above, arrays can also be assigned as a property of a new or an existing object:
+
+If you wish to initialize an array with a single element, and the element happens to be a Number, you must use the bracket syntax. When a single Number value is passed to the Array() constructor or function, it is interpreted as an arrayLength, not as a single element.
+
+This creates an array with only one element: the number 42.
+
+This creates an array with no elements and arr.length set to 42.
+
+This is equivalent to:
+
+Calling Array(N) results in a RangeError, if N is a non-whole number whose fractional portion is non-zero. The following example illustrates this behavior.
+
+If your code needs to create arrays with single elements of an arbitrary data type, it is safer to use array literals. Alternatively, create an empty array first before adding the single element to it.
+
+You can also use the Array.of static method to create arrays with single element.
+
+Because elements are also properties, you can access them using property accessors. Suppose you define the following array:
+
+You can refer to the first element of the array as myArray[0], the second element of the array as myArray[1], etcâ¦ The index of the elements begins with zero.
+
+Note:
+You can also use property accessors to access other properties of the array, like with an object.
+
+You can populate an array by assigning values to its elements. For example:
+
+Note:
+If you supply a non-integer value to the array operator in the code above, a property will be created in the object representing the array, instead of an array element.
+
+You can also populate an array when you create it:
+
+At the implementation level, JavaScript's arrays actually store their elements as standard object properties, using the array index as the property name.
+
+The length property is special. Its value is always a positive integer greater than the index of the last element if one exists. (In the example below, 'Dusty' is indexed at 30, so cats.length returns 30 + 1).
+
+Remember, JavaScript Array indexes are 0-based: they start at 0, not 1. This means that the length property will be one more than the highest index stored in the array:
+
+You can also assign to the length property.
+
+Writing a value that is shorter than the number of stored items truncates the array. Writing 0 empties it entirely:
+
+A common operation is to iterate over the values of an array, processing each one in some way, as follows:
+
+If you know that none of the elements in your array evaluate to false in a boolean contextâif your array consists only of DOM nodes, for exampleâyou can use a more efficient idiom:
+
+This avoids the overhead of checking the length of the array, and ensures that the div variable is reassigned to the current item each time around the loop for added convenience.
+
+The forEach() method provides another way of iterating over an array:
+
+The function passed to forEach is executed once for every item in the array, with the array item passed as the argument to the function. Unassigned values are not iterated in a forEach loop.
+
+Note that the elements of an array that are omitted when the array is defined are not listed when iterating by forEach, but are listed when undefined has been manually assigned to the element:
+
+Since JavaScript array elements are saved as standard object properties, it is not advisable to iterate through JavaScript arrays using for...in loops, because normal elements and all enumerable properties will be listed.
+
+The Array object has the following methods:
+
+The concat() method joins two or more arrays and returns a new array.
+
+The join() method joins all elements of an array into a string.
+
+The push() method adds one or more elements to the end of an array and returns the resulting length of the array.
+
+The pop() method removes the last element from an array and returns that element.
+
+The shift() method removes the first element from an array and returns that element.
+
+The unshift() method adds one or more elements to the front of an array and returns the new length of the array.
+
+The slice() method extracts a section of an array and returns a new array.
+
+The at() method returns the element at the specified index in the array, or undefined if the index is out of range. It's notably used for negative indices that access elements from the end of the array.
+
+The splice() method removes elements from an array and (optionally) replaces them. It returns the items which were removed from the array.
+
+The reverse() method transposes the elements of an array, in place: the first array element becomes the last and the last becomes the first. It returns a reference to the array.
+
+The flat() method returns a new array with all sub-array elements concatenated into it recursively up to the specified depth.
+
+The sort() method sorts the elements of an array in place, and returns a reference to the array.
+
+sort() can also take a callback function to determine how array elements are compared. The callback function is called with two arguments, which are two values from the array. The function compares these two values and returns a positive number, negative number, or zero, indicating the order of the two values. For instance, the following will sort the array by the last letter of a string:
+
+The indexOf() method searches the array for searchElement and returns the index of the first match.
+
+The lastIndexOf() method works like indexOf, but starts at the end and searches backwards.
+
+The forEach() method executes callback on every array item and returns undefined.
+
+The forEach method (and others below) that take a callback are known as iterative methods, because they iterate over the entire array in some fashion. Each one takes an optional second argument called thisArg. If provided, thisArg becomes the value of the this keyword inside the body of the callback function. If not provided, as with other cases where a function is invoked outside of an explicit object context, this will refer to the global object (window, globalThis, etc.) when the function is not strict, or undefined when the function is strict.
+
+Note:
+The sort() method introduced above is not an iterative method, because its callback function is only used for comparison and may not be called in any particular order based on element order. sort() does not accept the thisArg parameter either.
+
+The map() method returns a new array of the return value from executing callback on every array item.
+
+The flatMap() method runs map() followed by a flat() of depth 1.
+
+The filter() method returns a new array containing the items for which callback returned true.
+
+The find() method returns the first item for which callback returned true.
+
+The findLast() method returns the last item for which callback returned true.
+
+The findIndex() method returns the index of the first item for which callback returned true.
+
+The findLastIndex() method returns the index of the last item for which callback returned true.
+
+The every() method returns true if callback returns true for every item in the array.
+
+The some() method returns true if callback returns true for at least one item in the array.
+
+The reduce() method applies callback(accumulator, currentValue, currentIndex, array) for each value in the array for the purpose of reducing the list of items down to a single value. The reduce function returns the final value returned by callback function.
+
+If initialValue is specified, then callback is called with initialValue as the first parameter value and the value of the first item in the array as the second parameter value.
+
+If initialValue is not specified, then callback's first two parameter values will be the first and second elements of the array. On every subsequent call, the first parameter's value will be whatever callback returned on the previous call, and the second parameter's value will be the next value in the array.
+
+If callback needs access to the index of the item being processed, or access to the entire array, they are available as optional parameters.
+
+The reduceRight() method works like reduce(), but starts with the last element.
+
+reduce and reduceRight are the least obvious of the iterative array methods. They should be used for algorithms that combine two values recursively in order to reduce a sequence down to a single value.
+
+You can transform back and forth between arrays and other data structures.
+
+The Object.groupBy() method can be used to group the elements of an array, using a test function that returns a string indicating the group of the current element.
+
+Here we have an inventory array that contains "food" objects that have a name and a type.
+
+To use Object.groupBy(), you supply a callback function that is called with the current element, and optionally the current index and array, and returns a string indicating the group of the element.
+
+The code below uses an arrow function to return the type of each array element (this uses object destructuring syntax for function arguments to unpack the type element from the passed object). The result is an object that has properties named after the unique strings returned by the callback. Each property is assigned an array containing the elements in the group.
+
+Note that the returned object references the same elements as the original array (not deep copies). Changing the internal structure of these elements will be reflected in both the original array and the returned object.
+
+If you can't use a string as the key, for example, if the information to group is associated with an object that might change, then you can instead use Map.groupBy(). This is very similar to Object.groupBy() except that it groups the elements of the array into a Map that can use an arbitrary value (object or primitive) as a key.
+
+Arrays can contain "empty slots", which are not the same as slots filled with the value undefined. Empty slots can be created in one of the following ways:
+
+In some operations, empty slots behave as if they are filled with undefined.
+
+But in others (most notably array iteration methods), empty slots are skipped.
+
+For a complete list of how array methods behave with sparse arrays, see the Array reference page.
+
+Arrays can be nested, meaning that an array can contain another array as an element. Using this characteristic of JavaScript arrays, multi-dimensional arrays can be created.
+
+The following code creates a two-dimensional array.
+
+This example creates an array with the following rows:
+
+Arrays can also be used like objects, to store related information.
+
+For example, when an array is the result of a match between a regular expression and a string, the array returns properties and elements that provide information about the match. An array is the return value of RegExp.prototype.exec(), String.prototype.match(), and String.prototype.split(). For information on using arrays with regular expressions, see Regular Expressions.
+
+Some JavaScript objects, such as the NodeList returned by document.getElementsByTagName() or the arguments object made available within the body of a function, look and behave like arrays on the surface but do not share all of their methods. The arguments object provides a length attribute but does not implement array methods like forEach().
+
+Array methods cannot be called directly on array-like objects.
+
+But you can call them indirectly using Function.prototype.call().
+
+Array prototype methods can be used on strings as well, since they provide sequential access to their characters in a similar way to arrays:
+
+This page was last modified on Jul 8, 2025 by MDN contributors.

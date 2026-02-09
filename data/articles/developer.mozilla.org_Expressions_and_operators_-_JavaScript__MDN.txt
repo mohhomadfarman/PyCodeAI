@@ -1,0 +1,317 @@
+Title: Expressions and operators - JavaScript | MDN
+Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators
+
+This chapter describes JavaScript's expressions and operators, including assignment, comparison, arithmetic, bitwise, logical, string, ternary and more.
+
+At a high level, an expression is a valid unit of code that resolves to a value. There are two types of expressions: those that have side effects (such as assigning values) and those that purely evaluate.
+
+The expression x = 7 is an example of the first type. This expression uses the = operator to assign the value seven to the variable x. The expression itself evaluates to 7.
+
+The expression 3 + 4 is an example of the second type. This expression uses the + operator to add 3 and 4 together and produces a value, 7. However, if it's not eventually part of a bigger construct (for example, a variable declaration like const z = 3 + 4), its result will be immediately discarded â this is usually a programmer mistake because the evaluation doesn't produce any effects.
+
+As the examples above also illustrate, all complex expressions are joined by operators, such as = and +. In this section, we will introduce the following operators:
+
+These operators join operands either formed by higher-precedence operators or one of the basic expressions. A complete and detailed list of operators and expressions is also available in the reference.
+
+The precedence of operators determines the order they are applied when evaluating an expression. For example:
+
+Despite * and + coming in different orders, both expressions would result in 7 because * has precedence over +, so the *-joined expression will always be evaluated first. You can override operator precedence by using parentheses (which creates a grouped expression â the basic expression). To see a complete table of operator precedence as well as various caveats, see the Operator Precedence Reference page.
+
+JavaScript has both binary and unary operators, and one special ternary operator, the conditional operator.
+A binary operator requires two operands, one before the operator and one after the operator:
+
+For example, 3 + 4 or x * y. This form is called an infix binary operator, because the operator is placed between two operands. All binary operators in JavaScript are infix.
+
+A unary operator requires a single operand, either before or after the operator:
+
+For example, x++ or ++x. The operator operand form is called a prefix unary operator, and the operand operator form is called a postfix unary operator. ++ and -- are the only postfix operators in JavaScript â all other operators, like !, typeof, etc. are prefix.
+
+An assignment operator assigns a value to its left operand based on the value of its right operand.
+The simple assignment operator is equal (=), which assigns the value of its right operand to its left operand.
+That is, x = f() is an assignment expression that assigns the value of f() to x.
+
+There are also compound assignment operators that are shorthand for the operations listed in the following table:
+
+If an expression evaluates to an object, then the left-hand side of an assignment expression may make assignments to properties of that expression.
+For example:
+
+For more information about objects, read Working with Objects.
+
+If an expression does not evaluate to an object, then assignments to properties of that expression do not assign:
+
+In strict mode, the code above throws, because one cannot assign properties to primitives.
+
+It is an error to assign values to unmodifiable properties or to properties of an expression without properties (null or undefined).
+
+For more complex assignments, the destructuring syntax is a JavaScript expression that makes it possible to extract data from arrays or objects using a syntax that mirrors the construction of array and
+object literals.
+
+Without destructuring, it takes multiple statements to extract values from arrays and objects:
+
+With destructuring, you can extract multiple values into distinct variables using a single statement:
+
+In general, assignments are used within a variable declaration (i.e., with const, let, or var) or as standalone statements.
+
+However, like other expressions, assignment expressions like x = f() evaluate into a result value.
+Although this result value is usually not used, it can then be used by another expression.
+
+Chaining assignments or nesting assignments in other expressions can result in surprising behavior.
+For this reason, some JavaScript style guides discourage chaining or nesting assignments.
+Nevertheless, assignment chaining and nesting may occur sometimes, so it is important to be able to understand how they work.
+
+By chaining or nesting an assignment expression, its result can itself be assigned to another variable.
+It can be logged, it can be put inside an array literal or function call, and so on.
+
+The evaluation result matches the expression to the right of the = sign in the
+"Meaning" column of the table above. That means that x = f() evaluates into
+whatever f()'s result is, x += f() evaluates into the resulting sum x + f(),
+x **= f() evaluates into the resulting power x ** f(), and so on.
+
+In the case of logical assignments, x &&= f(),
+x ||= f(), and x ??= f(), the return value is that of the
+logical operation without the assignment, so x && f(),
+x || f(), and x ?? f(), respectively.
+
+When chaining these expressions without parentheses or other grouping operators
+like array literals, the assignment expressions are grouped right to left
+(they are right-associative), but they are evaluated left to right.
+
+Note that, for all assignment operators other than = itself,
+the resulting values are always based on the operands' values before
+the operation.
+
+For example, assume that the following functions f and g
+and the variables x and y have been declared:
+
+Consider these three examples:
+
+y = x = f() is equivalent to y = (x = f()),
+because the assignment operator = is right-associative.
+However, it evaluates from left to right:
+
+y = [ f(), x = g() ] also evaluates from left to right:
+
+x[f()] = g() also evaluates from left to right.
+(This example assumes that x is already assigned to some object.
+For more information about objects, read Working with Objects.)
+
+Chaining assignments or nesting assignments in other expressions can
+result in surprising behavior. For this reason,
+chaining assignments in the same statement is discouraged.
+
+In particular, putting a variable chain in a const, let, or var statement often does not work. Only the outermost/leftmost variable would get declared; other variables within the assignment chain are not declared by the const/let/var statement.
+For example:
+
+This statement seemingly declares the variables x, y, and z.
+However, it only actually declares the variable z.
+y and x are either invalid references to nonexistent variables (in strict mode) or, worse, would implicitly create global variables for x and y in sloppy mode.
+
+A comparison operator compares its operands and returns a logical value based on whether the comparison is true.
+The operands can be numerical, string, logical, or object values.
+Strings are compared based on standard lexicographical ordering, using Unicode values.
+In most cases, if the two operands are not of the same type, JavaScript attempts to convert them to an appropriate type for the comparison.
+This behavior generally results in comparing the operands numerically.
+The sole exceptions to type conversion within comparisons involve the === and !== operators, which perform strict equality and inequality comparisons.
+These operators do not attempt to convert the operands to compatible types before checking equality.
+The following table describes the comparison operators in terms of this sample code:
+
+"3" == var1
+
+Note:
+=> is not a comparison operator but rather is the notation
+for Arrow functions.
+
+An arithmetic operator takes numerical values (either literals or variables) as their operands and returns a single numerical value.
+The standard arithmetic operators are addition (+), subtraction (-), multiplication (*), and division (/).
+These operators work as they do in most other programming languages when used with floating point numbers (in particular, note that division by zero produces Infinity). For example:
+
+In addition to the standard arithmetic operations (+, -, *, /), JavaScript provides the arithmetic operators listed in the following table:
+
++"3" returns 3.
+
++true returns 1.
+
+A bitwise operator treats their operands as a set of 32 bits (zeros and ones), rather
+than as decimal, hexadecimal, or octal numbers. For example, the decimal number nine has
+a binary representation of 1001. Bitwise operators perform their operations on such
+binary representations, but they return standard JavaScript numerical values.
+
+The following table summarizes JavaScript's bitwise operators.
+
+Conceptually, the bitwise logical operators work as follows:
+
+The operands are converted to thirty-two-bit integers and expressed by a series of bits (zeros and ones).
+Numbers with more than 32 bits get their most significant bits discarded.
+For example, the following integer with more than 32 bits will be converted to a 32-bit integer:
+
+Each bit in the first operand is paired with the corresponding bit in the second operand: first bit to first bit, second bit to second bit, and so on.
+
+The operator is applied to each pair of bits, and the result is constructed bitwise.
+
+For example, the binary representation of nine is 1001, and the binary representation of fifteen is 1111.
+So, when the bitwise operators are applied to these values, the results are as follows:
+
+Note that all 32 bits are inverted using the Bitwise NOT operator, and that values with
+the most significant (left-most) bit set to 1 represent negative numbers
+(two's-complement representation). ~x evaluates to the same value that
+-x - 1 evaluates to.
+
+The bitwise shift operators take two operands: the first is a quantity to be shifted, and the second specifies the number of bit positions by which the first operand is to be
+shifted.
+The direction of the shift operation is controlled by the operator used.
+
+Shift operators convert their operands to thirty-two-bit integers and return a result of either type Number or BigInt: specifically, if the type
+of the left operand is BigInt, they return BigInt;
+otherwise, they return Number.
+
+The shift operators are listed in the following table.
+
+Logical operators are typically used with Boolean (logical) values; when they are, they return a Boolean value.
+However, the &&, ||, and ?? operators actually return the value of one of the specified operands, so if these
+operators are used with non-Boolean values, they may return a non-Boolean value. As such, they are more adequately called "value selection operators".
+The logical operators are described in the following table.
+
+Examples of expressions that can be converted to false are those that evaluate to null, 0, 0n, NaN, the empty string (""), or undefined.
+
+The following code shows examples of the && (logical AND) operator.
+
+The following code shows examples of the || (logical OR) operator.
+
+The following code shows examples of the ?? (nullish coalescing) operator.
+
+Note how ?? works like ||, but it only returns the second expression when the first one is "nullish", i.e., null or undefined. ?? is a better alternative than || for setting defaults for values that might be null or undefined, in particular when values like '' or 0 are valid values and the default should not apply.
+
+The following code shows examples of the ! (logical NOT) operator.
+
+As logical expressions are evaluated left to right, they are tested for possible
+"short-circuit" evaluation using the following rules:
+
+The rules of logic guarantee that these evaluations are always correct. Note that the
+anything part of the above expressions is not evaluated, so any side effects of
+doing so do not take effect.
+
+Most operators that can be used between numbers can be used between BigInt values as well.
+
+One exception is unsigned right shift (>>>), which is not defined for BigInt values. This is because a BigInt does not have a fixed width, so technically it does not have a "highest bit".
+
+BigInts and numbers are not mutually replaceable â you cannot mix them in calculations.
+
+This is because BigInt is neither a subset nor a superset of numbers. BigInts have higher precision than numbers when representing large integers, but cannot represent decimals, so implicit conversion on either side might lose precision. Use explicit conversion to signal whether you wish the operation to be a number operation or a BigInt one.
+
+You can compare BigInts with numbers.
+
+In addition to the comparison operators, which can be used on string values, the concatenation operator (+) concatenates two string values together, returning another string that is the union of the two operand strings.
+
+For example,
+
+The shorthand assignment operator += can also be used to concatenate strings.
+
+For example,
+
+The conditional operator
+is the only JavaScript operator that takes three operands.
+The operator can have one of two values based on a condition.
+The syntax is:
+
+If condition is true, the operator has the value of val1.
+Otherwise it has the value of val2. You can use the conditional operator anywhere you would use a standard operator.
+
+For example,
+
+This statement assigns the value "adult" to the variable status if
+age is eighteen or more. Otherwise, it assigns the value "minor" to
+status.
+
+The comma operator (,)
+evaluates both of its operands and returns the value of the last operand.
+This operator is primarily used inside a for loop, to allow multiple variables to be updated each time through the loop.
+It is regarded bad style to use it elsewhere, when it is not necessary.
+Often two separate statements can and should be used instead.
+
+For example, if a is a 2-dimensional array with 10 elements on a side, the following code uses the comma operator to update two variables at once.
+The code prints the values of the diagonal elements in the array:
+
+A unary operation is an operation with only one operand.
+
+The delete operator deletes an object's property.
+The syntax is:
+
+where object is the name of an object, property is an existing property, and propertyKey is a string or symbol referring to an existing property.
+
+If the delete operator succeeds, it removes the property from the object.
+Trying to access it afterwards will yield undefined.
+The delete operator returns true if the operation is possible; it returns false if the operation is not possible.
+
+Since arrays are just objects, it's technically possible to delete elements from them.
+This is, however, regarded as a bad practice â try to avoid it.
+When you delete an array property, the array length is not affected and other elements are not re-indexed.
+To achieve that behavior, it is much better to just overwrite the element with the value undefined.
+To actually manipulate the array, use the various array methods such as splice.
+
+The typeof operator returns a string indicating the type of the unevaluated operand.
+operand is the string, variable, keyword, or object for which the type is to be returned.
+The parentheses are optional.
+
+Suppose you define the following variables:
+
+The typeof operator returns the following results for these variables:
+
+For the keywords true and null, the typeof
+operator returns the following results:
+
+For a number or string, the typeof operator returns the following results:
+
+For property values, the typeof operator returns the type of value the
+property contains:
+
+For methods and functions, the typeof operator returns results as follows:
+
+For predefined objects, the typeof operator returns results as follows:
+
+The void operator specifies an expression to be evaluated without returning a value. expression is a JavaScript expression to evaluate.
+The parentheses surrounding the expression are optional, but it is good style to use them to avoid precedence issues.
+
+A relational operator compares its operands and returns a Boolean value based on whether the comparison is true.
+
+The in operator returns true if the specified property is in the specified object.
+The syntax is:
+
+where propNameOrNumber is a string, numeric, or symbol expression representing a property name or array index, and objectName is the name of an object.
+
+The following examples show some uses of the in operator.
+
+The instanceof operator returns true
+if the specified object is of the specified object type. The syntax is:
+
+where object is the object to test against objectType, and objectType is a constructor representing a type, such as Map or Array.
+
+Use instanceof when you need to confirm the type of an object at runtime.
+For example, when catching exceptions, you can branch to different exception-handling code depending on the type of exception thrown.
+
+For example, the following code uses instanceof to determine whether obj is a Map object. Because obj is a Map object, the statements inside the if block execute.
+
+All operators eventually operate on one or more basic expressions. These basic expressions include identifiers and literals, but there are a few other kinds as well. They are briefly introduced below, and their semantics are described in detail in their respective reference sections.
+
+The this keyword is usually used within a function. In general, when the function is attached to an object as a method, this refers to the object that the method is called on. It functions like a hidden parameter that is passed to the function. this is an expression that evaluates to the object, so you can use all the object operations we introduced.
+
+For example, suppose a function is defined as follows:
+
+We can now attach this function to an object, and it will use the properties of that object when called:
+
+The grouping operator ( ) controls the precedence of evaluation in
+expressions. For example, you can override multiplication and division first, then
+addition and subtraction to evaluate addition first.
+
+The property accessor syntax gets property values on objects, using either dot notation or bracket notation.
+
+The working with objects guide goes into more details about object properties.
+
+The optional chaining syntax (?.) performs the chained operation on an object if it is defined and non-null, and otherwise short-circuits the operation and returns undefined.
+This allows you to operate on a value that may be null or undefined without causing a TypeError.
+
+You can use the new operator to create an instance of a user-defined object type or of one of the built-in object types. Use new as follows:
+
+The super keyword is used to call functions on an object's parent.
+It is useful with classes to call the parent constructor, for example.
+
+This page was last modified on Jul 8, 2025 by MDN contributors.

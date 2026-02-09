@@ -1,0 +1,4 @@
+Title: GitHub Copilot documentation - GitHub Docs
+Source: https://docs.github.com/en/copilot
+
+You can use GitHub Copilot to enhance your productivity and assist as you work on code.

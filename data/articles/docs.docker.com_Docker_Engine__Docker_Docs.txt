@@ -1,0 +1,38 @@
+Title: Docker Engine | Docker Docs
+Source: https://docs.docker.com/engine/
+
+Docker Engine is an open source containerization technology for building and
+containerizing your applications. Docker Engine acts as a client-server
+application with:
+
+The CLI uses
+Docker APIs to control or interact with the Docker
+daemon through scripting or direct CLI commands. Many other Docker applications
+use the underlying API and CLI. The daemon creates and manages Docker objects,
+such as images, containers, networks, and volumes.
+
+For more details, see
+Docker Architecture.
+
+Learn how to install the open source Docker Engine for your distribution.
+
+Use persistent data with Docker containers.
+
+Manage network connections between containers.
+
+Learn how to view and read container logs.
+
+Tidy up unused resources.
+
+Delve into the configuration options of the Docker daemon.
+
+Run Docker without root privileges.
+
+Find out what features of Docker Engine you should stop using.
+
+Read the release notes for the latest version.
+
+Commercial use of Docker Engine obtained via Docker Desktop
+within larger enterprises (exceeding 250 employees OR with annual revenue surpassing
+$10 million USD), requires a paid subscription.
+Apache License, Version 2.0. See LICENSE for the full license.

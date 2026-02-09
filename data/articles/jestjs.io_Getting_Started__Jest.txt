@@ -1,0 +1,74 @@
+Title: Getting Started · Jest
+Source: https://jestjs.io/docs/getting-started
+
+Install Jest using your favorite package manager:
+
+Let's get started by writing a test for a hypothetical function that adds two numbers. First, create a sum.js file:
+
+Then, create a file named sum.test.js. This will contain our actual test:
+
+Add the following section to your package.json:
+
+Finally, run yarn test or npm test and Jest will print this message:
+
+You just successfully wrote your first test using Jest!
+
+This test used expect and toBe to test that two values were exactly identical. To learn about the other things that Jest can test, see Using Matchers.
+
+You can run Jest directly from the CLI (if it's globally available in your PATH, e.g. by yarn global add jest or npm install jest --global) with a variety of useful options.
+
+Here's how to run Jest on files matching my-test, using config.json as a configuration file and display a native OS notification after the run:
+
+If you'd like to learn more about running jest through the command line, take a look at the Jest CLI Options page.
+
+Based on your project, Jest will ask you a few questions and will create a basic configuration file with a short description for each option:
+
+To use Babel, install required dependencies:
+
+Configure Babel to target your current version of Node by creating a babel.config.js file in the root of your project:
+
+The ideal configuration for Babel will depend on your project. See Babel's docs for more details.
+
+Jest will set process.env.NODE_ENV to 'test' if it's not set to something else. You can use that in your configuration to conditionally setup only the compilation needed for Jest, e.g.
+
+babel-jest is automatically installed when installing Jest and will automatically transform files if a babel configuration exists in your project. To avoid this behavior, you can explicitly reset the transform configuration option:
+
+Most of the time you do not need to do anything special to work with different bundlers - the exception is if you have some plugin or configuration which generates files or have custom file resolution rules.
+
+Jest can be used in projects that use webpack to manage assets, styles, and compilation. webpack does offer some unique challenges over other tools. Refer to the webpack guide to get started.
+
+Jest is not supported by Vite due to incompatibilities with the Vite plugin system.
+
+There are examples for Jest integration with Vite in the vite-jest library. However, this library is not compatible with versions of Vite later than 2.4.2.
+
+One alternative is Vitest which has an API compatible Jest.
+
+Jest can be used in projects that use parcel-bundler to manage assets, styles, and compilation similar to webpack. Parcel requires zero configuration. Refer to the official docs to get started.
+
+Jest supports TypeScript, via Babel. First, make sure you followed the instructions on using Babel above. Next, install the @babel/preset-typescript:
+
+Then add @babel/preset-typescript to the list of presets in your babel.config.js.
+
+However, there are some caveats to using TypeScript with Babel. Because TypeScript support in Babel is purely transpilation, Jest will not type-check your tests as they are run. If you want that, you can use ts-jest instead, or just run the TypeScript compiler tsc separately (or as part of your build process).
+
+ts-jest is a TypeScript preprocessor with source map support for Jest that lets you use Jest to test projects written in TypeScript.
+
+In order for Jest to transpile TypeScript with ts-jest, you may also need to create a configuration file.
+
+There are two ways to have Jest global APIs typed for test files written in TypeScript.
+
+You can use type definitions which ships with Jest and will update each time you update Jest. Install the @jest/globals package:
+
+And import the APIs from it:
+
+See the additional usage documentation of describe.each/test.each and mock functions.
+
+Or you may choose to install the @types/jest package. It provides types for Jest globals without a need to import them.
+
+@types/jest is a third party library maintained at DefinitelyTyped, hence the latest Jest features or versions may not be covered yet. Try to match versions of Jest and @types/jest as closely as possible. For example, if you are using Jest 27.4.0 then installing 27.4.x of @types/jest is ideal.
+
+Jest can be used with ESLint without any further configuration as long as you import the Jest global helpers (describe, it, etc.) from @jest/globals before using them in your test file. This is necessary to avoid no-undef errors from ESLint, which doesn't know about the Jest globals.
+
+If you'd like to avoid these imports, you can configure your ESLint environment to support these globals by adding the jest environment:
+
+Or use eslint-plugin-jest, which has a similar effect:

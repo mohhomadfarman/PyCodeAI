@@ -1,0 +1,6 @@
+Title: Express - Node.js web application framework
+Source: https://expressjs.com/
+
+[email protected]: Now the Default on npm with LTS Timeline
+
+Express 5.1.0 is now the default on npm, and we’re introducing an official LTS schedule for the v4 and v5 release lines. Check out our latest blog for more information.

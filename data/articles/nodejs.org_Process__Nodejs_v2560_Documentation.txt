@@ -1,0 +1,1255 @@
+Title: Process | Node.js v25.6.0 Documentation
+Source: https://nodejs.org/api/process.html
+
+Source Code: lib/process.js
+
+The process object provides information about, and control over, the current
+Node.js process.
+
+The process object is an instance of EventEmitter.
+
+The 'beforeExit' event is emitted when Node.js empties its event loop and has
+no additional work to schedule. Normally, the Node.js process will exit when
+there is no work scheduled, but a listener registered on the 'beforeExit'
+event can make asynchronous calls, and thereby cause the Node.js process to
+continue.
+
+The listener callback function is invoked with the value of
+process.exitCode passed as the only argument.
+
+The 'beforeExit' event is not emitted for conditions causing explicit
+termination, such as calling process.exit() or uncaught exceptions.
+
+The 'beforeExit' should not be used as an alternative to the 'exit' event
+unless the intention is to schedule additional work.
+
+If the Node.js process is spawned with an IPC channel (see the Child Process
+and Cluster documentation), the 'disconnect' event will be emitted when
+the IPC channel is closed.
+
+The 'exit' event is emitted when the Node.js process is about to exit as a
+result of either:
+
+There is no way to prevent the exiting of the event loop at this point, and once
+all 'exit' listeners have finished running the Node.js process will terminate.
+
+The listener callback function is invoked with the exit code specified either
+by the process.exitCode property, or the exitCode argument passed to the
+process.exit() method.
+
+Listener functions must only perform synchronous operations. The Node.js
+process will exit immediately after calling the 'exit' event listeners
+causing any additional work still queued in the event loop to be abandoned.
+In the following example, for instance, the timeout will never occur:
+
+If the Node.js process is spawned with an IPC channel (see the Child Process
+and Cluster documentation), the 'message' event is emitted whenever a
+message sent by a parent process using childprocess.send() is received by
+the child process.
+
+The message goes through serialization and parsing. The resulting message might
+not be the same as what is originally sent.
+
+If the serialization option was set to advanced used when spawning the
+process, the message argument can contain data that JSON is not able
+to represent.
+See Advanced serialization for child_process for more details.
+
+The 'rejectionHandled' event is emitted whenever a Promise has been rejected
+and an error handler was attached to it (using promise.catch(), for
+example) later than one turn of the Node.js event loop.
+
+The Promise object would have previously been emitted in an
+'unhandledRejection' event, but during the course of processing gained a
+rejection handler.
+
+There is no notion of a top level for a Promise chain at which rejections can
+always be handled. Being inherently asynchronous in nature, a Promise
+rejection can be handled at a future point in time, possibly much later than
+the event loop turn it takes for the 'unhandledRejection' event to be emitted.
+
+Another way of stating this is that, unlike in synchronous code where there is
+an ever-growing list of unhandled exceptions, with Promises there can be a
+growing-and-shrinking list of unhandled rejections.
+
+In synchronous code, the 'uncaughtException' event is emitted when the list of
+unhandled exceptions grows.
+
+In asynchronous code, the 'unhandledRejection' event is emitted when the list
+of unhandled rejections grows, and the 'rejectionHandled' event is emitted
+when the list of unhandled rejections shrinks.
+
+In this example, the unhandledRejections Map will grow and shrink over time,
+reflecting rejections that start unhandled and then become handled. It is
+possible to record such errors in an error log, either periodically (which is
+likely best for long-running application) or upon process exit (which is likely
+most convenient for scripts).
+
+The 'workerMessage' event is emitted for any incoming message send by the other
+party by using postMessageToThread().
+
+Added the origin argument.
+
+Added in: v0.1.18
+
+The 'uncaughtException' event is emitted when an uncaught JavaScript
+exception bubbles all the way back to the event loop. By default, Node.js
+handles such exceptions by printing the stack trace to stderr and exiting
+with code 1, overriding any previously set process.exitCode.
+Adding a handler for the 'uncaughtException' event overrides this default
+behavior. Alternatively, change the process.exitCode in the
+'uncaughtException' handler which will result in the process exiting with the
+provided exit code. Otherwise, in the presence of such handler the process will
+exit with 0.
+
+It is possible to monitor 'uncaughtException' events without overriding the
+default behavior to exit the process by installing a
+'uncaughtExceptionMonitor' listener.
+
+'uncaughtException' is a crude mechanism for exception handling
+intended to be used only as a last resort. The event should not be used as
+an equivalent to On Error Resume Next. Unhandled exceptions inherently mean
+that an application is in an undefined state. Attempting to resume application
+code without properly recovering from the exception can cause additional
+unforeseen and unpredictable issues.
+
+Exceptions thrown from within the event handler will not be caught. Instead the
+process will exit with a non-zero exit code and the stack trace will be printed.
+This is to avoid infinite recursion.
+
+Attempting to resume normally after an uncaught exception can be similar to
+pulling out the power cord when upgrading a computer. Nine out of ten
+times, nothing happens. But the tenth time, the system becomes corrupted.
+
+The correct use of 'uncaughtException' is to perform synchronous cleanup
+of allocated resources (e.g. file descriptors, handles, etc) before shutting
+down the process. It is not safe to resume normal operation after
+'uncaughtException'.
+
+To restart a crashed application in a more reliable way, whether
+'uncaughtException' is emitted or not, an external monitor should be employed
+in a separate process to detect application failures and recover or restart as
+needed.
+
+The 'uncaughtExceptionMonitor' event is emitted before an
+'uncaughtException' event is emitted or a hook installed via
+process.setUncaughtExceptionCaptureCallback() is called.
+
+Installing an 'uncaughtExceptionMonitor' listener does not change the behavior
+once an 'uncaughtException' event is emitted. The process will
+still crash if no 'uncaughtException' listener is installed.
+
+Not handling Promise rejections is deprecated.
+
+Unhandled Promise rejections will now emit a process warning.
+
+Added in: v1.4.1
+
+The 'unhandledRejection' event is emitted whenever a Promise is rejected and
+no error handler is attached to the promise within a turn of the event loop.
+When programming with Promises, exceptions are encapsulated as "rejected
+promises". Rejections can be caught and handled using promise.catch() and
+are propagated through a Promise chain. The 'unhandledRejection' event is
+useful for detecting and keeping track of promises that were rejected whose
+rejections have not yet been handled.
+
+The following will also trigger the 'unhandledRejection' event to be
+emitted:
+
+In this example case, it is possible to track the rejection as a developer error
+as would typically be the case for other 'unhandledRejection' events. To
+address such failures, a non-operational
+.catch(() => { }) handler may be attached to
+resource.loaded, which would prevent the 'unhandledRejection' event from
+being emitted.
+
+If an 'unhandledRejection' event is emitted but not handled it will
+be raised as an uncaught exception. This alongside other behaviors of
+'unhandledRejection' events can changed via the --unhandled-rejections flag.
+
+The 'warning' event is emitted whenever Node.js emits a process warning.
+
+A process warning is similar to an error in that it describes exceptional
+conditions that are being brought to the user's attention. However, warnings
+are not part of the normal Node.js and JavaScript error handling flow.
+Node.js can emit warnings whenever it detects bad coding practices that could
+lead to sub-optimal application performance, bugs, or security vulnerabilities.
+
+By default, Node.js will print process warnings to stderr. The --no-warnings
+command-line option can be used to suppress the default console output but the
+'warning' event will still be emitted by the process object. Currently, it
+is not possible to suppress specific warning types other than deprecation
+warnings. To suppress deprecation warnings, check out the --no-deprecation
+flag.
+
+The following example illustrates the warning that is printed to stderr when
+too many listeners have been added to an event:
+
+In contrast, the following example turns off the default warning output and
+adds a custom handler to the 'warning' event:
+
+The --trace-warnings command-line option can be used to have the default
+console output for warnings include the full stack trace of the warning.
+
+Launching Node.js using the --throw-deprecation command-line flag will
+cause custom deprecation warnings to be thrown as exceptions.
+
+Using the --trace-deprecation command-line flag will cause the custom
+deprecation to be printed to stderr along with the stack trace.
+
+Using the --no-deprecation command-line flag will suppress all reporting
+of the custom deprecation.
+
+The *-deprecation command-line flags only affect warnings that use the name
+'DeprecationWarning'.
+
+See the process.emitWarning() method for issuing
+custom or application-specific warnings.
+
+There are no strict guidelines for warning types (as identified by the name
+property) emitted by Node.js. New types of warnings can be added at any time.
+A few of the warning types that are most common include:
+
+The 'worker' event is emitted after a new <Worker> thread has been created.
+
+Signal events will be emitted when the Node.js process receives a signal. Please
+refer to signal(7) for a listing of standard POSIX signal names such as
+'SIGINT', 'SIGHUP', etc.
+
+Signals are not available on Worker threads.
+
+The signal handler will receive the signal's name ('SIGINT',
+'SIGTERM', etc.) as the first argument.
+
+The name of each event will be the uppercase common name for the signal (e.g.
+'SIGINT' for SIGINT signals).
+
+Windows does not support signals so has no equivalent to termination by signal,
+but Node.js offers some emulation with process.kill(), and
+subprocess.kill():
+
+The process.abort() method causes the Node.js process to exit immediately and
+generate a core file.
+
+This feature is not available in Worker threads.
+
+The process.allowedNodeEnvironmentFlags property is a special,
+read-only Set of flags allowable within the NODE_OPTIONS
+environment variable.
+
+process.allowedNodeEnvironmentFlags extends Set, but overrides
+Set.prototype.has to recognize several different possible flag
+representations. process.allowedNodeEnvironmentFlags.has() will
+return true in the following cases:
+
+When iterating over process.allowedNodeEnvironmentFlags, flags will
+appear only once; each will begin with one or more dashes. Flags
+passed through to V8 will contain underscores instead of non-leading
+dashes:
+
+The methods add(), clear(), and delete() of
+process.allowedNodeEnvironmentFlags do nothing, and will fail
+silently.
+
+If Node.js was compiled without NODE_OPTIONS support (shown in
+process.config), process.allowedNodeEnvironmentFlags will
+contain what would have been allowable.
+
+The operating system CPU architecture for which the Node.js binary was compiled.
+Possible values are: 'arm', 'arm64', 'ia32', 'loong64', 'mips',
+'mipsel', 'ppc64', 'riscv64', 's390', 's390x', and 'x64'.
+
+The process.argv property returns an array containing the command-line
+arguments passed when the Node.js process was launched. The first element will
+be process.execPath. See process.argv0 if access to the original value
+of argv[0] is needed. If a program entry point was provided, the second element
+will be the absolute path to it. The remaining elements are additional command-line
+arguments.
+
+For example, assuming the following script for process-args.js:
+
+Launching the Node.js process as:
+
+Would generate the output:
+
+The process.argv0 property stores a read-only copy of the original value of
+argv[0] passed when Node.js starts.
+
+Change stability index for this feature from Experimental to Stable.
+
+Added in: v22.0.0, v20.13.0
+
+Gets the amount of free memory that is still available to the process
+(in bytes).
+
+See uv_get_available_memory for more
+information.
+
+The object no longer accidentally exposes native C++ bindings.
+
+Added in: v7.1.0
+
+If the Node.js process was spawned with an IPC channel (see the
+Child Process documentation), the process.channel
+property is a reference to the IPC channel. If no IPC channel exists, this
+property is undefined.
+
+This method makes the IPC channel keep the event loop of the process
+running if .unref() has been called before.
+
+Typically, this is managed through the number of 'disconnect' and 'message'
+listeners on the process object. However, this method can be used to
+explicitly request a specific behavior.
+
+This method makes the IPC channel not keep the event loop of the process
+running, and lets it finish even while the channel is open.
+
+Typically, this is managed through the number of 'disconnect' and 'message'
+listeners on the process object. However, this method can be used to
+explicitly request a specific behavior.
+
+The process.chdir() method changes the current working directory of the
+Node.js process or throws an exception if doing so fails (for instance, if
+the specified directory does not exist).
+
+This feature is not available in Worker threads.
+
+The process.config object is now frozen.
+
+Modifying process.config has been deprecated.
+
+Added in: v0.7.7
+
+The process.config property returns a frozen Object containing the
+JavaScript representation of the configure options used to compile the current
+Node.js executable. This is the same as the config.gypi file that was produced
+when running the ./configure script.
+
+An example of the possible output looks like:
+
+If the Node.js process is spawned with an IPC channel (see the Child Process
+and Cluster documentation), the process.connected property will return
+true so long as the IPC channel is connected and will return false after
+process.disconnect() is called.
+
+Once process.connected is false, it is no longer possible to send messages
+over the IPC channel using process.send().
+
+Change stability index for this feature from Experimental to Stable.
+
+Aligned return value with uv_get_constrained_memory.
+
+Added in: v19.6.0, v18.15.0
+
+Gets the amount of memory available to the process (in bytes) based on
+limits imposed by the OS. If there is no such constraint, or the constraint
+is unknown, 0 is returned.
+
+See uv_get_constrained_memory for more
+information.
+
+The process.cpuUsage() method returns the user and system CPU time usage of
+the current process, in an object with properties user and system, whose
+values are microsecond values (millionth of a second). These values measure time
+spent in user and system code respectively, and may end up being greater than
+actual elapsed time if multiple CPU cores are performing work for this process.
+
+The result of a previous call to process.cpuUsage() can be passed as the
+argument to the function, to get a diff reading.
+
+The process.cwd() method returns the current working directory of the Node.js
+process.
+
+The port used by the Node.js debugger when enabled.
+
+If the Node.js process is spawned with an IPC channel (see the Child Process
+and Cluster documentation), the process.disconnect() method will close the
+IPC channel to the parent process, allowing the child process to exit gracefully
+once there are no other connections keeping it alive.
+
+The effect of calling process.disconnect() is the same as calling
+ChildProcess.disconnect() from the parent process.
+
+If the Node.js process was not spawned with an IPC channel,
+process.disconnect() will be undefined.
+
+Added support for the flags argument.
+
+Added in: v0.1.16
+
+The process.dlopen() method allows dynamically loading shared objects. It is
+primarily used by require() to load C++ Addons, and should not be used
+directly, except in special cases. In other words, require() should be
+preferred over process.dlopen() unless there are specific reasons such as
+custom dlopen flags or loading from ES modules.
+
+The flags argument is an integer that allows to specify dlopen
+behavior. See the os.constants.dlopen documentation for details.
+
+An important requirement when calling process.dlopen() is that the module
+instance must be passed. Functions exported by the C++ Addon are then
+accessible via module.exports.
+
+The example below shows how to load a C++ Addon, named local.node,
+that exports a foo function. All the symbols are loaded before
+the call returns, by passing the RTLD_NOW constant. In this example
+the constant is assumed to be available.
+
+The process.emitWarning() method can be used to emit custom or application
+specific process warnings. These can be listened for by adding a handler to the
+'warning' event.
+
+In this example, an Error object is generated internally by
+process.emitWarning() and passed through to the
+'warning' handler.
+
+If warning is passed as an Error object, the options argument is ignored.
+
+The process.emitWarning() method can be used to emit custom or application
+specific process warnings. These can be listened for by adding a handler to the
+'warning' event.
+
+In each of the previous examples, an Error object is generated internally by
+process.emitWarning() and passed through to the 'warning'
+handler.
+
+If warning is passed as an Error object, it will be passed through to the
+'warning' event handler unmodified (and the optional type,
+code and ctor arguments will be ignored):
+
+A TypeError is thrown if warning is anything other than a string or Error
+object.
+
+While process warnings use Error objects, the process warning
+mechanism is not a replacement for normal error handling mechanisms.
+
+The following additional handling is implemented if the warning type is
+'DeprecationWarning':
+
+As a best practice, warnings should be emitted only once per process. To do
+so, place the emitWarning() behind a boolean.
+
+Worker threads will now use a copy of the parent thread's process.env by default, configurable through the env option of the Worker constructor.
+
+Implicit conversion of variable value to string is deprecated.
+
+Added in: v0.1.27
+
+The process.env property returns an object containing the user environment.
+See environ(7).
+
+An example of this object looks like:
+
+It is possible to modify this object, but such modifications will not be
+reflected outside the Node.js process, or (unless explicitly requested)
+to other Worker threads.
+In other words, the following example would not work:
+
+While the following will:
+
+Assigning a property on process.env will implicitly convert the value
+to a string. This behavior is deprecated. Future versions of Node.js may
+throw an error when the value is not a string, number, or boolean.
+
+Use delete to delete a property from process.env.
+
+On Windows operating systems, environment variables are case-insensitive.
+
+Unless explicitly specified when creating a Worker instance,
+each Worker thread has its own copy of process.env, based on its
+parent thread's process.env, or whatever was specified as the env option
+to the Worker constructor. Changes to process.env will not be visible
+across Worker threads, and only the main thread can make changes that
+are visible to the operating system or to native add-ons. On Windows, a copy of
+process.env on a Worker instance operates in a case-sensitive manner
+unlike the main thread.
+
+The process.execArgv property returns the set of Node.js-specific command-line
+options passed when the Node.js process was launched. These options do not
+appear in the array returned by the process.argv property, and do not
+include the Node.js executable, the name of the script, or any options following
+the script name. These options are useful in order to spawn child processes with
+the same execution environment as the parent.
+
+Results in process.execArgv:
+
+And process.argv:
+
+Refer to Worker constructor for the detailed behavior of worker
+threads with this property.
+
+The process.execPath property returns the absolute pathname of the executable
+that started the Node.js process. Symbolic links, if any, are resolved.
+
+Replaces the current process with a new process.
+
+This is achieved by using the execve POSIX function and therefore no memory or other
+resources from the current process are preserved, except for the standard input,
+standard output and standard error file descriptor.
+
+All other resources are discarded by the system when the processes are swapped, without triggering
+any exit or close events and without running any cleanup handler.
+
+This function will never return, unless an error occurred.
+
+This function is not available on Windows or IBM i.
+
+Only accepts a code of type number, or of type string if it represents an integer.
+
+Added in: v0.1.13
+
+The process.exit() method instructs Node.js to terminate the process
+synchronously with an exit status of code. If code is omitted, exit uses
+either the 'success' code 0 or the value of process.exitCode if it has been
+set. Node.js will not terminate until all the 'exit' event listeners are
+called.
+
+To exit with a 'failure' code:
+
+The shell that executed Node.js should see the exit code as 1.
+
+Calling process.exit() will force the process to exit as quickly as possible
+even if there are still asynchronous operations pending that have not yet
+completed fully, including I/O operations to process.stdout and
+process.stderr.
+
+In most situations, it is not actually necessary to call process.exit()
+explicitly. The Node.js process will exit on its own if there is no additional
+work pending in the event loop. The process.exitCode property can be set to
+tell the process which exit code to use when the process exits gracefully.
+
+For instance, the following example illustrates a misuse of the
+process.exit() method that could lead to data printed to stdout being
+truncated and lost:
+
+The reason this is problematic is because writes to process.stdout in Node.js
+are sometimes asynchronous and may occur over multiple ticks of the Node.js
+event loop. Calling process.exit(), however, forces the process to exit
+before those additional writes to stdout can be performed.
+
+Rather than calling process.exit() directly, the code should set the
+process.exitCode and allow the process to exit naturally by avoiding
+scheduling any additional work for the event loop:
+
+If it is necessary to terminate the Node.js process due to an error condition,
+throwing an uncaught error and allowing the process to terminate accordingly
+is safer than calling process.exit().
+
+In Worker threads, this function stops the current thread rather
+than the current process.
+
+Only accepts a code of type number, or of type string if it represents an integer.
+
+Added in: v0.11.8
+
+A number which will be the process exit code, when the process either
+exits gracefully, or is exited via process.exit() without specifying
+a code.
+
+The value of process.exitCode can be updated by either assigning a value to
+process.exitCode or by passing an argument to process.exit():
+
+The value can also be set implicitly by Node.js when unrecoverable errors occur (e.g.
+such as the encountering of an unsettled top-level await). However explicit
+manipulations of the exit code always take precedence over implicit ones:
+
+A boolean value that is true if the current Node.js build is caching builtin modules.
+
+A boolean value that is true if the current Node.js build is a debug build.
+
+A boolean value that is true if the current Node.js build includes the inspector.
+
+A boolean value that is true if the current Node.js build includes support for IPv6.
+
+Since all Node.js builds have IPv6 support, this value is always true.
+
+A boolean value that is true if the current Node.js build supports
+loading ECMAScript modules using require().
+
+A boolean value that is true if the current Node.js build includes support for TLS.
+
+A boolean value that is true if the current Node.js build includes support for ALPN in TLS.
+
+In Node.js 11.0.0 and later versions, the OpenSSL dependencies feature unconditional ALPN support.
+This value is therefore identical to that of process.features.tls.
+
+A boolean value that is true if the current Node.js build includes support for OCSP in TLS.
+
+In Node.js 11.0.0 and later versions, the OpenSSL dependencies feature unconditional OCSP support.
+This value is therefore identical to that of process.features.tls.
+
+A boolean value that is true if the current Node.js build includes support for SNI in TLS.
+
+In Node.js 11.0.0 and later versions, the OpenSSL dependencies feature unconditional SNI support.
+This value is therefore identical to that of process.features.tls.
+
+Type stripping is now stable.
+
+Added in: v23.0.0, v22.10.0
+
+A value that is "strip" by default,
+"transform" if Node.js is run with --experimental-transform-types, and false if
+Node.js is run with --no-strip-types.
+
+A boolean value that is true if the current Node.js build includes support for libuv.
+
+Since it's not possible to build Node.js without libuv, this value is always true.
+
+This function registers a callback to be called when the process emits the exit
+event if the ref object was not garbage collected. If the object ref was garbage collected
+before the exit event is emitted, the callback will be removed from the finalization registry,
+and it will not be called on process exit.
+
+Inside the callback you can release the resources allocated by the ref object.
+Be aware that all limitations applied to the beforeExit event are also applied to the callback function,
+this means that there is a possibility that the callback will not be called under special circumstances.
+
+The idea of ​​this function is to help you free up resources when the starts process exiting,
+but also let the object be garbage collected if it is no longer being used.
+
+Eg: you can register an object that contains a buffer, you want to make sure that buffer is released
+when the process exit, but if the object is garbage collected before the process exit, we no longer
+need to release the buffer, so in this case we just remove the callback from the finalization registry.
+
+The code above relies on the following assumptions:
+
+Regular functions could reference the context where the obj lives, making the obj not garbage collectible.
+
+Arrow functions will hold the previous context. Consider, for example:
+
+It is very unlikely (not impossible) that this object will be garbage collected,
+but if it is not, dispose will be called when process.exit is called.
+
+Be careful and avoid relying on this feature for the disposal of critical resources,
+as it is not guaranteed that the callback will be called under all circumstances.
+
+This function behaves exactly like the register, except that the callback will be called
+when the process emits the beforeExit event if ref object was not garbage collected.
+
+Be aware that all limitations applied to the beforeExit event are also applied to the callback function,
+this means that there is a possibility that the callback will not be called under special circumstances.
+
+This function remove the register of the object from the finalization
+registry, so the callback will not be called anymore.
+
+Change stability index for this feature from Experimental to Stable.
+
+Added in: v17.3.0, v16.14.0
+
+The process.getActiveResourcesInfo() method returns an array of strings
+containing the types of the active resources that are currently keeping the
+event loop alive.
+
+process.getBuiltinModule(id) provides a way to load built-in modules
+in a globally available function. ES Modules that need to support
+other environments can use it to conditionally load a Node.js built-in
+when it is run in Node.js, without having to deal with the resolution
+error that can be thrown by import in a non-Node.js environment or
+having to use dynamic import() which either turns the module into
+an asynchronous module, or turns a synchronous API into an asynchronous one.
+
+If id specifies a built-in module available in the current Node.js process,
+process.getBuiltinModule(id) method returns the corresponding built-in
+module. If id does not correspond to any built-in module, undefined
+is returned.
+
+process.getBuiltinModule(id) accepts built-in module IDs that are recognized
+by module.isBuiltin(id). Some built-in modules must be loaded with the
+node: prefix, see built-in modules with mandatory node: prefix.
+The references returned by process.getBuiltinModule(id) always point to
+the built-in module corresponding to id even if users modify
+require.cache so that require(id) returns something else.
+
+The process.getegid() method returns the numerical effective group identity
+of the Node.js process. (See getegid(2).)
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+
+The process.geteuid() method returns the numerical effective user identity of
+the process. (See geteuid(2).)
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+
+The process.getgid() method returns the numerical group identity of the
+process. (See getgid(2).)
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+
+The process.getgroups() method returns an array with the supplementary group
+IDs. POSIX leaves it unspecified if the effective group ID is included but
+Node.js ensures it always is.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+
+The process.getuid() method returns the numeric user identity of the process.
+(See getuid(2).)
+
+This function not available on Windows.
+
+Indicates whether a callback has been set using
+process.setUncaughtExceptionCaptureCallback().
+
+This is the legacy version of process.hrtime.bigint()
+before bigint was introduced in JavaScript.
+
+The process.hrtime() method returns the current high-resolution real time
+in a [seconds, nanoseconds] tuple Array, where nanoseconds is the
+remaining part of the real time that can't be represented in second precision.
+
+time is an optional parameter that must be the result of a previous
+process.hrtime() call to diff with the current time. If the parameter
+passed in is not a tuple Array, a TypeError will be thrown. Passing in a
+user-defined array instead of the result of a previous call to
+process.hrtime() will lead to undefined behavior.
+
+These times are relative to an arbitrary time in the
+past, and not related to the time of day and therefore not subject to clock
+drift. The primary use is for measuring performance between intervals:
+
+The bigint version of the process.hrtime() method returning the
+current high-resolution real time in nanoseconds as a bigint.
+
+Unlike process.hrtime(), it does not support an additional time
+argument since the difference can just be computed directly
+by subtraction of the two bigints.
+
+The process.initgroups() method reads the /etc/group file and initializes
+the group access list, using all groups of which the user is a member. This is
+a privileged operation that requires that the Node.js process either have root
+access or the CAP_SETGID capability.
+
+Use care when dropping privileges:
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+The process.kill() method sends the signal to the process identified by
+pid.
+
+Signal names are strings such as 'SIGINT' or 'SIGHUP'. See Signal Events
+and kill(2) for more information.
+
+This method will throw an error if the target pid does not exist. As a special
+case, a signal of 0 can be used to test for the existence of a process.
+Windows platforms will throw an error if the pid is used to kill a process
+group.
+
+Even though the name of this function is process.kill(), it is really just a
+signal sender, like the kill system call. The signal sent may do something
+other than kill the target process.
+
+When SIGUSR1 is received by a Node.js process, Node.js will start the
+debugger. See Signal Events.
+
+This API is no longer experimental.
+
+Added in: v21.7.0, v20.12.0
+
+Loads the .env file into process.env. Usage of NODE_OPTIONS
+in the .env file will not have any effect on Node.js.
+
+The process.mainModule property provides an alternative way of retrieving
+require.main. The difference is that if the main module changes at
+runtime, require.main may still refer to the original main module in
+modules that were required before the change occurred. Generally, it's
+safe to assume that the two refer to the same module.
+
+As with require.main, process.mainModule will be undefined if there
+is no entry script.
+
+Added arrayBuffers to the returned object.
+
+Added external to the returned object.
+
+Added in: v0.1.16
+
+Returns an object describing the memory usage of the Node.js process measured in
+bytes.
+
+When using Worker threads, rss will be a value that is valid for the
+entire process, while the other fields will only refer to the current thread.
+
+The process.memoryUsage() method iterates over each page to gather
+information about memory usage which might be slow depending on the
+program memory allocations.
+
+On Linux or other systems where glibc is commonly used, an application may have sustained
+rss growth despite stable heapTotal due to fragmentation caused by the glibc malloc
+implementation. See nodejs/node#21973 on how to switch to an alternative malloc
+implementation to address the performance issue.
+
+The process.memoryUsage.rss() method returns an integer representing the
+Resident Set Size (RSS) in bytes.
+
+The Resident Set Size, is the amount of space occupied in the main
+memory device (that is a subset of the total allocated memory) for the
+process, including all C++ and JavaScript objects and code.
+
+This is the same value as the rss property provided by process.memoryUsage()
+but process.memoryUsage.rss() is faster.
+
+Changed stability to Legacy.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Additional arguments after callback are now supported.
+
+Added in: v0.1.26
+
+process.nextTick() adds callback to the "next tick queue". This queue is
+fully drained after the current operation on the JavaScript stack runs to
+completion and before the event loop is allowed to continue. It's possible to
+create an infinite loop if one were to recursively call process.nextTick().
+See the Event Loop guide for more background.
+
+This is important when developing APIs in order to give users the opportunity
+to assign event handlers after an object has been constructed but before any
+I/O has occurred:
+
+It is very important for APIs to be either 100% synchronous or 100%
+asynchronous. Consider this example:
+
+This API is hazardous because in the following case:
+
+It is not clear whether foo() or bar() will be called first.
+
+The following approach is much better:
+
+The queueMicrotask() API is an alternative to process.nextTick() that instead of using the
+"next tick queue" defers execution of a function using the same microtask queue used to execute the
+then, catch, and finally handlers of resolved promises.
+
+Within Node.js, every time the "next tick queue" is drained, the microtask queue
+is drained immediately after.
+
+So in CJS modules process.nextTick() callbacks are always run before queueMicrotask() ones.
+However since ESM modules are processed already as part of the microtask queue, there
+queueMicrotask() callbacks are always executed before process.nextTick() ones since Node.js
+is already in the process of draining the microtask queue.
+
+For most userland use cases, the queueMicrotask() API provides a portable
+and reliable mechanism for deferring execution that works across multiple
+JavaScript platform environments and should be favored over process.nextTick().
+In simple scenarios, queueMicrotask() can be a drop-in replacement for
+process.nextTick().
+
+One note-worthy difference between the two APIs is that process.nextTick()
+allows specifying additional values that will be passed as arguments to the
+deferred function when it is called. Achieving the same result with
+queueMicrotask() requires using either a closure or a bound function:
+
+There are minor differences in the way errors raised from within the next tick
+queue and microtask queue are handled. Errors thrown within a queued microtask
+callback should be handled within the queued callback when possible. If they are
+not, the process.on('uncaughtException') event handler can be used to capture
+and handle the errors.
+
+When in doubt, unless the specific capabilities of process.nextTick() are
+needed, use queueMicrotask().
+
+The process.noDeprecation property indicates whether the --no-deprecation
+flag is set on the current Node.js process. See the documentation for
+the 'warning' event and the
+emitWarning() method for more information about this
+flag's behavior.
+
+This API is available through the --permission flag.
+
+process.permission is an object whose methods are used to manage permissions
+for the current process. Additional documentation is available in the
+Permission Model.
+
+Verifies that the process is able to access the given scope and reference.
+If no reference is provided, a global scope is assumed, for instance,
+process.permission.has('fs.read') will check if the process has ALL
+file system read permissions.
+
+The reference has a meaning based on the provided scope. For example,
+the reference when the scope is File System means files and folders.
+
+The available scopes are:
+
+The process.pid property returns the PID of the process.
+
+The process.platform property returns a string identifying the operating
+system platform for which the Node.js binary was compiled.
+
+Currently possible values are:
+
+The value 'android' may also be returned if the Node.js is built on the
+Android operating system. However, Android support in Node.js
+is experimental.
+
+The process.ppid property returns the PID of the parent of the
+current process.
+
+An object is "refable" if it implements the Node.js "Refable protocol".
+Specifically, this means that the object implements the Symbol.for('nodejs.ref')
+and Symbol.for('nodejs.unref') methods. "Ref'd" objects will keep the Node.js
+event loop alive, while "unref'd" objects will not. Historically, this was
+implemented by using ref() and unref() methods directly on the objects.
+This pattern, however, is being deprecated in favor of the "Refable protocol"
+in order to better support Web Platform API types whose APIs cannot be modified
+to add ref() and unref() methods but still need to support that behavior.
+
+The lts property is now supported.
+
+Added in: v3.0.0
+
+The process.release property returns an Object containing metadata related
+to the current release, including URLs for the source tarball and headers-only
+tarball.
+
+process.release contains the following properties:
+
+In custom builds from non-release versions of the source tree, only the
+name property may be present. The additional properties should not be
+relied upon to exist.
+
+This API is no longer experimental.
+
+Added in: v11.8.0
+
+process.report is an object whose methods are used to generate diagnostic
+reports for the current process. Additional documentation is available in the
+report documentation.
+
+Write reports in a compact format, single-line JSON, more easily consumable
+by log processing systems than the default multi-line format designed for
+human consumption.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+Directory where the report is written. The default value is the empty string,
+indicating that reports are written to the current working directory of the
+Node.js process.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+Filename where the report is written. If set to the empty string, the output
+filename will be comprised of a timestamp, PID, and sequence number. The default
+value is the empty string.
+
+If the value of process.report.filename is set to 'stdout' or 'stderr',
+the report is written to the stdout or stderr of the process respectively.
+
+This API is no longer experimental.
+
+Added in: v11.8.0
+
+Returns a JavaScript Object representation of a diagnostic report for the
+running process. The report's JavaScript stack trace is taken from err, if
+present.
+
+Additional documentation is available in the report documentation.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+If true, a diagnostic report is generated on fatal errors, such as out of
+memory errors or failed C++ assertions.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+If true, a diagnostic report is generated when the process receives the
+signal specified by process.report.signal.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+If true, a diagnostic report is generated on uncaught exception.
+
+If true, a diagnostic report is generated without the environment variables.
+
+This API is no longer experimental.
+
+Added in: v11.12.0
+
+The signal used to trigger the creation of a diagnostic report. Defaults to
+'SIGUSR2'.
+
+This API is no longer experimental.
+
+Added in: v11.8.0
+
+filename <string> Name of the file where the report is written. This
+should be a relative path, that will be appended to the directory specified in
+process.report.directory, or the current working directory of the Node.js
+process, if unspecified.
+
+err <Error> A custom error used for reporting the JavaScript stack.
+
+Returns: <string> Returns the filename of the generated report.
+
+Writes a diagnostic report to a file. If filename is not provided, the default
+filename includes the date, time, PID, and a sequence number. The report's
+JavaScript stack trace is taken from err, if present.
+
+If the value of filename is set to 'stdout' or 'stderr', the report is
+written to the stdout or stderr of the process respectively.
+
+Additional documentation is available in the report documentation.
+
+If Node.js is spawned with an IPC channel, the process.send() method can be
+used to send messages to the parent process. Messages will be received as a
+'message' event on the parent's ChildProcess object.
+
+If Node.js was not spawned with an IPC channel, process.send will be
+undefined.
+
+The message goes through serialization and parsing. The resulting message might
+not be the same as what is originally sent.
+
+The process.setegid() method sets the effective group identity of the process.
+(See setegid(2).) The id can be passed as either a numeric ID or a group
+name string. If a group name is specified, this method blocks while resolving
+the associated a numeric ID.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+The process.seteuid() method sets the effective user identity of the process.
+(See seteuid(2).) The id can be passed as either a numeric ID or a username
+string. If a username is specified, the method blocks while resolving the
+associated numeric ID.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+The process.setgid() method sets the group identity of the process. (See
+setgid(2).) The id can be passed as either a numeric ID or a group name
+string. If a group name is specified, this method blocks while resolving the
+associated numeric ID.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+The process.setgroups() method sets the supplementary group IDs for the
+Node.js process. This is a privileged operation that requires the Node.js
+process to have root or the CAP_SETGID capability.
+
+The groups array can contain numeric group IDs, group names, or both.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+The process.setuid(id) method sets the user identity of the process. (See
+setuid(2).) The id can be passed as either a numeric ID or a username string.
+If a username is specified, the method blocks while resolving the associated
+numeric ID.
+
+This function is only available on POSIX platforms (i.e. not Windows or
+Android).
+This feature is not available in Worker threads.
+
+This function enables or disables the Source Map support for
+stack traces.
+
+It provides same features as launching Node.js process with commandline options
+--enable-source-maps.
+
+Only source maps in JavaScript files that are loaded after source maps has been
+enabled will be parsed and loaded.
+
+This implies calling module.setSourceMapsSupport() with an option
+{ nodeModules: true, generatedCode: true }.
+
+The process.setUncaughtExceptionCaptureCallback() function sets a function
+that will be invoked when an uncaught exception occurs, which will receive the
+exception value itself as its first argument.
+
+If such a function is set, the 'uncaughtException' event will
+not be emitted. If --abort-on-uncaught-exception was passed from the
+command line or set through v8.setFlagsFromString(), the process will
+not abort. Actions configured to take place on exceptions such as report
+generations will be affected too
+
+To unset the capture function,
+process.setUncaughtExceptionCaptureCallback(null) may be used. Calling this
+method with a non-null argument while another capture function is set will
+throw an error.
+
+Using this function is mutually exclusive with using the deprecated
+domain built-in module.
+
+The process.sourceMapsEnabled property returns whether the
+Source Map support for stack traces is enabled.
+
+The process.stderr property returns a stream connected to
+stderr (fd 2). It is a net.Socket (which is a Duplex
+stream) unless fd 2 refers to a file, in which case it is
+a Writable stream.
+
+process.stderr differs from other Node.js streams in important ways. See
+note on process I/O for more information.
+
+This property refers to the value of underlying file descriptor of
+process.stderr. The value is fixed at 2. In Worker threads,
+this field does not exist.
+
+The process.stdin property returns a stream connected to
+stdin (fd 0). It is a net.Socket (which is a Duplex
+stream) unless fd 0 refers to a file, in which case it is
+a Readable stream.
+
+For details of how to read from stdin see readable.read().
+
+As a Duplex stream, process.stdin can also be used in "old" mode that
+is compatible with scripts written for Node.js prior to v0.10.
+For more information see Stream compatibility.
+
+In "old" streams mode the stdin stream is paused by default, so one
+must call process.stdin.resume() to read from it. Note also that calling
+process.stdin.resume() itself would switch stream to "old" mode.
+
+This property refers to the value of underlying file descriptor of
+process.stdin. The value is fixed at 0. In Worker threads,
+this field does not exist.
+
+The process.stdout property returns a stream connected to
+stdout (fd 1). It is a net.Socket (which is a Duplex
+stream) unless fd 1 refers to a file, in which case it is
+a Writable stream.
+
+For example, to copy process.stdin to process.stdout:
+
+process.stdout differs from other Node.js streams in important ways. See
+note on process I/O for more information.
+
+This property refers to the value of underlying file descriptor of
+process.stdout. The value is fixed at 1. In Worker threads,
+this field does not exist.
+
+process.stdout and process.stderr differ from other Node.js streams in
+important ways:
+
+These behaviors are partly for historical reasons, as changing them would
+create backward incompatibility, but they are also expected by some users.
+
+Synchronous writes avoid problems such as output written with console.log() or
+console.error() being unexpectedly interleaved, or not written at all if
+process.exit() is called before an asynchronous write completes. See
+process.exit() for more information.
+
+Warning: Synchronous writes block the event loop until the write has
+completed. This can be near instantaneous in the case of output to a file, but
+under high system load, pipes that are not being read at the receiving end, or
+with slow terminals or file systems, it's possible for the event loop to be
+blocked often enough and long enough to have severe negative performance
+impacts. This may not be a problem when writing to an interactive terminal
+session, but consider this particularly careful when doing production logging to
+the process output streams.
+
+To check if a stream is connected to a TTY context, check the isTTY
+property.
+
+For instance:
+
+See the TTY documentation for more information.
+
+The initial value of process.throwDeprecation indicates whether the
+--throw-deprecation flag is set on the current Node.js process.
+process.throwDeprecation is mutable, so whether or not deprecation
+warnings result in errors may be altered at runtime. See the
+documentation for the 'warning' event and the
+emitWarning() method for more information.
+
+The process.threadCpuUsage() method returns the user and system CPU time usage of
+the current worker thread, in an object with properties user and system, whose
+values are microsecond values (millionth of a second).
+
+The result of a previous call to process.threadCpuUsage() can be passed as the
+argument to the function, to get a diff reading.
+
+The process.title property returns the current process title (i.e. returns
+the current value of ps). Assigning a new value to process.title modifies
+the current value of ps.
+
+When a new value is assigned, different platforms will impose different maximum
+length restrictions on the title. Usually such restrictions are quite limited.
+For instance, on Linux and macOS, process.title is limited to the size of the
+binary name plus the length of the command-line arguments because setting the
+process.title overwrites the argv memory of the process. Node.js 0.8
+allowed for longer process title strings by also overwriting the environ
+memory but that was potentially insecure and confusing in some (rather obscure)
+cases.
+
+Assigning a value to process.title might not result in an accurate label
+within process manager applications such as macOS Activity Monitor or Windows
+Services Manager.
+
+The process.traceDeprecation property indicates whether the
+--trace-deprecation flag is set on the current Node.js process. See the
+documentation for the 'warning' event and the
+emitWarning() method for more information about this
+flag's behavior.
+
+The process.traceProcessWarnings property indicates whether the --trace-warnings flag
+is set on the current Node.js process. This property allows programmatic control over the
+tracing of warnings, enabling or disabling stack traces for warnings at runtime.
+
+Calling process.umask() with no arguments is deprecated.
+
+Added in: v0.1.19
+
+process.umask() returns the Node.js process's file mode creation mask. Child
+processes inherit the mask from the parent process.
+
+process.umask(mask) sets the Node.js process's file mode creation mask. Child
+processes inherit the mask from the parent process. Returns the previous mask.
+
+In Worker threads, process.umask(mask) will throw an exception.
+
+An object is "unrefable" if it implements the Node.js "Refable protocol".
+Specifically, this means that the object implements the Symbol.for('nodejs.ref')
+and Symbol.for('nodejs.unref') methods. "Ref'd" objects will keep the Node.js
+event loop alive, while "unref'd" objects will not. Historically, this was
+implemented by using ref() and unref() methods directly on the objects.
+This pattern, however, is being deprecated in favor of the "Refable protocol"
+in order to better support Web Platform API types whose APIs cannot be modified
+to add ref() and unref() methods but still need to support that behavior.
+
+The process.uptime() method returns the number of seconds the current Node.js
+process has been running.
+
+The return value includes fractions of a second. Use Math.floor() to get whole
+seconds.
+
+The process.version property contains the Node.js version string.
+
+To get the version string without the prepended v, use
+process.versions.node.
+
+The v8 property now includes a Node.js specific suffix.
+
+The icu property is now supported.
+
+Added in: v0.2.0
+
+The process.versions property returns an object listing the version strings of
+Node.js and its dependencies. process.versions.modules indicates the current
+ABI version, which is increased whenever a C++ API changes. Node.js will refuse
+to load modules that were compiled against a different module ABI version.
+
+Will generate an object similar to:
+
+Node.js will normally exit with a 0 status code when no more async
+operations are pending. The following status codes are used in other
+cases:

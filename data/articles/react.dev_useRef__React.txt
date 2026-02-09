@@ -1,0 +1,82 @@
+Title: useRef – React
+Source: https://react.dev/reference/react/useRef
+
+useRef is a React Hook that lets you reference a value that’s not needed for rendering.
+
+Call useRef at the top level of your component to declare a ref.
+
+See more examples below.
+
+useRef returns an object with a single property:
+
+On the next renders, useRef will return the same object.
+
+Call useRef at the top level of your component to declare one or more refs.
+
+useRef returns a ref object with a single current property initially set to the initial value you provided.
+
+On the next renders, useRef will return the same object. You can change its current property to store information and read it later. This might remind you of state, but there is an important difference.
+
+Changing a ref does not trigger a re-render. This means refs are perfect for storing information that doesn’t affect the visual output of your component. For example, if you need to store an interval ID and retrieve it later, you can put it in a ref. To update the value inside the ref, you need to manually change its current property:
+
+Later, you can read that interval ID from the ref so that you can call clear that interval:
+
+By using a ref, you ensure that:
+
+Changing a ref does not trigger a re-render, so refs are not appropriate for storing information you want to display on the screen. Use state for that instead. Read more about choosing between useRef and useState.
+
+This component uses a ref to keep track of how many times the button was clicked. Note that it’s okay to use a ref instead of state here because the click count is only read and written in an event handler.
+
+If you show {ref.current} in the JSX, the number won’t update on click. This is because setting ref.current does not trigger a re-render. Information that’s used for rendering should be state instead.
+
+Do not write or read ref.current during rendering.
+
+React expects that the body of your component behaves like a pure function:
+
+Reading or writing a ref during rendering breaks these expectations.
+
+You can read or write refs from event handlers or effects instead.
+
+If you have to read or write something during rendering, use state instead.
+
+When you break these rules, your component might still work, but most of the newer features we’re adding to React will rely on these expectations. Read more about keeping your components pure.
+
+It’s particularly common to use a ref to manipulate the DOM. React has built-in support for this.
+
+First, declare a ref object with an initial value of null:
+
+Then pass your ref object as the ref attribute to the JSX of the DOM node you want to manipulate:
+
+After React creates the DOM node and puts it on the screen, React will set the current property of your ref object to that DOM node. Now you can access the <input>’s DOM node and call methods like focus():
+
+React will set the current property back to null when the node is removed from the screen.
+
+Read more about manipulating the DOM with refs.
+
+In this example, clicking the button will focus the input:
+
+React saves the initial ref value once and ignores it on the next renders.
+
+Although the result of new VideoPlayer() is only used for the initial render, you’re still calling this function on every render. This can be wasteful if it’s creating expensive objects.
+
+To solve it, you may initialize the ref like this instead:
+
+Normally, writing or reading ref.current during render is not allowed. However, it’s fine in this case because the result is always the same, and the condition only executes during initialization so it’s fully predictable.
+
+If you use a type checker and don’t want to always check for null, you can try a pattern like this instead:
+
+Here, the playerRef itself is nullable. However, you should be able to convince your type checker that there is no case in which getPlayer() returns null. Then use getPlayer() in your event handlers.
+
+If you try to pass a ref to your own component like this:
+
+You might get an error in the console:
+
+By default, your own components don’t expose refs to the DOM nodes inside them.
+
+To fix this, find the component that you want to get a ref to:
+
+And then add ref to the list of props your component accepts and pass ref as a prop to the relevant child built-in component like this:
+
+Then the parent component can get a ref to it.
+
+Read more about accessing another component’s DOM nodes.

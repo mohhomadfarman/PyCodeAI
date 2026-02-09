@@ -1,0 +1,20 @@
+Title: GitHub Docs
+Source: https://docs.github.com/
+
+Help for wherever you are on your GitHub journey.
+
+At the heart of GitHub is an open-source version control system (VCS) called Git. Git is responsible for everything GitHub-related that happens locally on your computer.
+
+You can connect to GitHub using the Secure Shell Protocol (SSH), which provides a secure channel over an unsecured network.
+
+You can create a repository on GitHub to store and collaborate on your project's files, then manage the repository's name and location.
+
+Create sophisticated formatting for your prose and code on GitHub with simple syntax.
+
+Pull requests let you propose, review, and merge code changes.
+
+Keep your account and data secure with features like two-factor authentication, SSH, and commit signature verification.
+
+Use GitHub Copilot to get code suggestions in your editor.
+
+Learn to work with your local repositories on your computer and remote repositories hosted on GitHub.

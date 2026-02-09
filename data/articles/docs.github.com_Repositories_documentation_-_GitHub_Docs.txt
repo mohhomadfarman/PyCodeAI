@@ -1,0 +1,26 @@
+Title: Repositories documentation - GitHub Docs
+Source: https://docs.github.com/en/repositories
+
+Learn to use and manage the repositories that allow you to store and collaborate on your project's code.
+
+When you create a repository on GitHub, it exists as a remote repository. You can clone your repository to create a local copy on your computer and sync between the two locations.
+
+You can restore some deleted repositories to recover their contents.
+
+You can upload and commit an existing file to a repository on GitHub or by using the command line.
+
+Public repositories on GitHub are often used to share open source software. For your repository to truly be open source, you'll need to license it so that others are free to use, change, and distribute the software.
+
+You can protect important branches by setting branch protection rules, which define whether collaborators can delete or force push to the branch and set requirements for any pushes to the branch, such as passing status checks or a linear commit history.
+
+You can create a release to package software, along with release notes and links to binary files, for other people to use.
+
+You can add a README file to your repository to tell other people why your project is useful, what they can do with your project, and how they can use it.
+
+You can use a CODEOWNERS file to define individuals or teams that are responsible for code in a repository.
+
+You can delete any repository or fork if you're either an organization owner or have admin permissions for the repository or fork. Deleting a forked repository does not delete the upstream repository.
+
+You can create a branch protection rule to enforce certain workflows for one or more branches, such as requiring an approving review or passing status checks for all pull requests merged into the protected branch.
+
+You can choose who can view your repository.

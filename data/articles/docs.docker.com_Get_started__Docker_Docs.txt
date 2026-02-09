@@ -1,0 +1,23 @@
+Title: Get started | Docker Docs
+Source: https://docs.docker.com/get-started/
+
+If you're new to Docker, this section guides you through the essential resources to get started.
+
+Follow the guides to help you get started and learn how Docker can optimize your development workflows.
+
+For more advanced concepts and scenarios in Docker, see
+Guides.
+
+Install Docker and jump into discovering what Docker is.
+
+Choose the best installation path for your setup.
+
+Learn about the Docker platform.
+
+Learn the foundational concepts and workflows of Docker.
+
+Get started with the basics and the benefits of containerizing your applications.
+
+Gain a better understanding of foundational Docker concepts.
+
+Get guided through a 45-minute workshop to learn about Docker.

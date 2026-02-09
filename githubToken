@@ -1,0 +1,4 @@
+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
+
+
+python cli.py crawl "lodash/lodash" --token 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

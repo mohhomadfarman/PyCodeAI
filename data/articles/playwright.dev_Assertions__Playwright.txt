@@ -1,0 +1,64 @@
+Title: Assertions | Playwright
+Source: https://playwright.dev/docs/test-assertions
+
+Playwright includes test assertions in the form of expect function. To make an assertion, call expect(value) and choose a matcher that reflects the expectation. There are many generic matchers like toEqual, toContain, toBeTruthy that can be used to assert any conditions.
+
+Playwright also includes web-specific async matchers that will wait until the expected condition is met. Consider the following example:
+
+Playwright will be re-testing the element with the test id of status until the fetched element has the "Submitted" text. It will re-fetch the element and check it over and over, until the condition is met or until the timeout is reached. You can either pass this timeout or configure it once via the testConfig.expect value in the test config.
+
+By default, the timeout for assertions is set to 5 seconds. Learn more about various timeouts.
+
+The following assertions will retry until the assertion passes, or the assertion timeout is reached. Note that retrying assertions are async, so you must await them.
+
+These assertions allow to test any conditions, but do not auto-retry. Most of the time, web pages show information asynchronously, and using non-retrying assertions can lead to a flaky test.
+
+Prefer auto-retrying assertions whenever possible. For more complex assertions that need to be retried, use expect.poll or expect.toPass.
+
+These expressions can be nested in other assertions to allow more relaxed matching against a given condition.
+
+In general, we can expect the opposite to be true by adding a .not to the front of the matchers:
+
+By default, failed assertion will terminate test execution. Playwright also supports soft assertions: failed soft assertions do not terminate test execution, but mark the test as failed.
+
+At any point during test execution, you can check whether there were any soft assertion failures:
+
+Note that soft assertions only work with Playwright test runner.
+
+You can specify a custom expect message as a second argument to the expect function, for example:
+
+This message will be shown in reporters, both for passing and failing expects, providing more context about the assertion.
+
+When expect passes, you might see a successful step like this:
+
+When expect fails, the error would look like this:
+
+Soft assertions also support custom message:
+
+You can create your own pre-configured expect instance to have its own defaults such as timeout and soft.
+
+You can convert any synchronous expect to an asynchronous polling one using expect.poll.
+
+The following method will poll given function until it returns HTTP status 200:
+
+You can also specify custom polling intervals:
+
+You can combine expect.configure({ soft: true }) with expect.poll to perform soft assertions in polling logic.
+
+This allows the test to continue even if the assertion inside poll fails.
+
+You can retry blocks of code until they are passing successfully.
+
+You can also specify custom timeout and retry intervals:
+
+Note that by default toPass has timeout 0 and does not respect custom expect timeout.
+
+You can extend Playwright assertions by providing custom matchers. These matchers will be available on the expect object.
+
+In this example we add a custom toHaveAmount function. Custom matcher should return a pass flag indicating whether the assertion passed, and a message callback that's used when the assertion fails.
+
+Now we can use toHaveAmount in the test.
+
+Do not confuse Playwright's expect with the expect library. The latter is not fully integrated with Playwright test runner, so make sure to use Playwright's own expect.
+
+You can combine custom matchers from multiple files or modules.

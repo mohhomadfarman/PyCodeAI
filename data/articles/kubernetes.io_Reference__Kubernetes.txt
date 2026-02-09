@@ -1,0 +1,70 @@
+Title: Reference | Kubernetes
+Source: https://kubernetes.io/docs/reference/
+
+This section of the Kubernetes documentation contains references.
+
+Glossary - a comprehensive, standardized list of Kubernetes terminology
+
+Kubernetes API Reference
+
+One-page API Reference for Kubernetes v1.35
+
+Using The Kubernetes API - overview of the API for Kubernetes.
+
+API access control - details on how Kubernetes controls API access
+
+Well-Known Labels, Annotations and Taints
+
+To call the Kubernetes API from a programming language, you can use
+client libraries. Officially supported
+client libraries:
+
+kubelet - The
+primary agent that runs on each node. The kubelet takes a set of PodSpecs
+and ensures that the described containers are running and healthy.
+
+kube-apiserver -
+REST API that validates and configures data for API objects such as pods,
+services, replication controllers.
+
+kube-controller-manager -
+Daemon that embeds the core control loops shipped with Kubernetes.
+
+kube-proxy - Can
+do simple TCP/UDP stream forwarding or round-robin TCP/UDP forwarding across
+a set of back-ends.
+
+kube-scheduler -
+Scheduler that manages availability, performance, and capacity.
+
+List of ports and protocols that
+should be open on control plane and worker nodes
+
+This section hosts the documentation for "unpublished" APIs which are used to
+configure kubernetes components or tools. Most of these APIs are not exposed
+by the API server in a RESTful way though they are essential for a user or an
+operator to use or manage a cluster.
+
+These are the APIs defined by the Kubernetes project, but are not implemented
+by the core project:
+
+An archive of the design docs for Kubernetes functionality. Good starting points are
+Kubernetes Architecture and
+Kubernetes Design Overview.
+
+Tools such as kubectl
+can work with different formats / encodings. These include:
+
+Kubernetes also has a custom protobuf encoding that is only used within HTTP messages.
+
+The kubectl tool supports some other output formats, such as custom columns;
+see output formats in the kubectl reference.
+
+Was this page helpful?
+
+Thanks for the feedback. If you have a specific, answerable question about how to use Kubernetes, ask it on
+Stack Overflow.
+Open an issue in the GitHub Repository if you want to
+report a problem
+or
+suggest an improvement.

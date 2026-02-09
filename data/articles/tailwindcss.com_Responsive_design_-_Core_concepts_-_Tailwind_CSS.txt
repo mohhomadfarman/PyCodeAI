@@ -1,0 +1,90 @@
+Title: Responsive design - Core concepts - Tailwind CSS
+Source: https://tailwindcss.com/docs/responsive-design
+
+Core concepts
+
+Using responsive utility variants to build adaptive user interfaces.
+
+Every utility class in Tailwind can be applied conditionally at different breakpoints, which makes it a piece of cake to build complex responsive interfaces without ever leaving your HTML.
+
+First, make sure you've added the viewport meta tag to the <head> of your document:
+
+Then to add a utility but only have it take effect at a certain breakpoint, all you need to do is prefix the utility with the breakpoint name, followed by the : character:
+
+There are five breakpoints by default, inspired by common device resolutions:
+
+This works for every utility class in the framework, which means you can change literally anything at a given breakpoint — even things like letter spacing or cursor styles.
+
+Here's a simple example of a marketing page component that uses a stacked layout on small screens, and a side-by-side layout on larger screens:
+
+Here's how the example above works:
+
+We've only used one breakpoint in this example, but you could easily customize this component at other sizes using the sm, lg, xl, or 2xl responsive prefixes as well.
+
+Tailwind uses a mobile-first breakpoint system, similar to what you might be used to in other frameworks like Bootstrap.
+
+What this means is that unprefixed utilities (like uppercase) take effect on all screen sizes, while prefixed utilities (like md:uppercase) only take effect at the specified breakpoint and above.
+
+Where this approach surprises people most often is that to style something for mobile, you need to use the unprefixed version of a utility, not the sm: prefixed version. Don't think of sm: as meaning "on small screens", think of it as "at the small breakpoint".
+
+Don't use sm: to target mobile devices
+
+Use unprefixed utilities to target mobile, and override them at larger breakpoints
+
+For this reason, it's often a good idea to implement the mobile layout for a design first, then layer on any changes that make sense for sm screens, followed by md screens, etc.
+
+By default, styles applied by rules like md:flex will apply at that breakpoint and stay applied at larger breakpoints.
+
+If you'd like to apply a utility only when a specific breakpoint range is active, stack a responsive variant like md with a max-* variant to limit that style to a specific range:
+
+Tailwind generates a corresponding max-* variant for each breakpoint, so out of the box the following variants are available:
+
+To target a single breakpoint, target the range for that breakpoint by stacking a responsive variant like md with the max-* variant for the next breakpoint:
+
+Read about targeting breakpoint ranges to learn more.
+
+Use the --breakpoint-* theme variables to customize your breakpoints:
+
+This updates the 2xl breakpoint to use 100rem instead of the default 96rem, and creates new xs and 3xl breakpoints that can be used in your markup:
+
+Note that it's important to always use the same unit for defining your breakpoints or the generated utilities may be sorted in an unexpected order, causing breakpoint classes to override each other in unexpected ways.
+
+Tailwind uses rem for the default breakpoints, so if you are adding additional breakpoints to the defaults, make sure you use rem as well.
+
+Learn more about customizing your theme in the theme documentation.
+
+To remove a default breakpoint, reset its value to the initial keyword:
+
+You can also reset all of the default breakpoints using --breakpoint-*: initial, then define all of your breakpoints from scratch:
+
+Learn more removing default theme values in the theme documentation.
+
+If you need to use a one-off breakpoint that doesn’t make sense to include in your theme, use the min or max variants to generate a custom breakpoint on the fly using any arbitrary value.
+
+Learn more about arbitrary value support in the arbitrary values documentation.
+
+Container queries are a modern CSS feature that let you style something based on the size of a parent element instead of the size of the entire viewport. They let you build components that are a lot more portable and reusable because they can change based on the actual space available for that component.
+
+Use the @container class to mark an element as a container, then use variants like @sm and @md to style child elements based on the size of the container:
+
+Just like breakpoint variants, container queries are mobile-first in Tailwind CSS and apply at the target container size and up.
+
+Use variants like @max-sm and @max-md to apply a style below a specific container size:
+
+Stack a regular container query variant with a max-width container query variant to target a specific range:
+
+For complex designs that use multiple nested containers, you can name containers using @container/{name} and target specific containers with variants like @sm/{name} and @md/{name}:
+
+This makes it possible to style something based on the size of a distant container, rather than just the nearest container.
+
+Use the --container-* theme variables to customize your container sizes:
+
+This adds a new 8xl container query variant that can be used in your markup:
+
+Learn more about customizing your theme in the theme documentation.
+
+Use variants like @min-[475px] and @max-[960px] for one-off container query sizes you don't want to add to your theme:
+
+Use container query length units like cqw as arbitrary values in other utility classes to reference the container size:
+
+By default, Tailwind includes container sizes ranging from 16rem (256px) to 80rem (1280px):

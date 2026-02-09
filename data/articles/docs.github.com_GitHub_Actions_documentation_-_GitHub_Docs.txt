@@ -1,0 +1,22 @@
+Title: GitHub Actions documentation - GitHub Docs
+Source: https://docs.github.com/en/actions
+
+Automate, customize, and execute your software development workflows right in your repository with GitHub Actions. You can discover, create, and share actions to perform any job you'd like, including CI/CD, and combine actions in a completely customized workflow.
+
+GitHub Actions workflows can automate tasks throughout the software development lifecycle.
+
+Build skills and knowledge about GitHub Actions through hands-on activities.
+
+You can create custom continuous integration (CI) workflows directly in your GitHub repository with GitHub Actions.
+
+You can configure a workflow in GitHub Actions to automatically publish or install a package from GitHub Packages.
+
+A workflow is a configurable automated process made up of one or more jobs. You must create a YAML file to define your workflow configuration.
+
+GitHub Actions workflows can automate tasks throughout the software development lifecycle.
+
+GitHub provides workflow templates for a variety of languages and tooling.
+
+In this tutorial, you'll learn how to publish Node.js packages to a registry as part of your continuous integration (CI) workflow.
+
+Learn how to create a continuous integration (CI) workflow to build and test your PowerShell project.

@@ -1,0 +1,60 @@
+Title: Getting Started: Layouts and Pages | Next.js
+Source: https://nextjs.org/docs/app/building-your-application/routing
+
+Next.js uses file-system based routing, meaning you can use folders and files to define routes. This page will guide you through how to create layouts and pages, and link between them.
+
+A page is UI that is rendered on a specific route. To create a page, add a page file inside the app directory and default export a React component. For example, to create an index page (/):
+
+A layout is UI that is shared between multiple pages. On navigation, layouts preserve state, remain interactive, and do not rerender.
+
+You can define a layout by default exporting a React component from a layout file. The component should accept a children prop which can be a page or another layout.
+
+For example, to create a layout that accepts your index page as child, add a layout file inside the app directory:
+
+The layout above is called a root layout because it's defined at the root of the app directory. The root layout is required and must contain html and body tags.
+
+A nested route is a route composed of multiple URL segments. For example, the /blog/[slug] route is composed of three segments:
+
+In Next.js:
+
+To create nested routes, you can nest folders inside each other. For example, to add a route for /blog, create a folder called blog in the app directory. Then, to make /blog publicly accessible, add a page.tsx file:
+
+You can continue nesting folders to create nested routes. For example, to create a route for a specific blog post, create a new [slug] folder inside blog and add a page file:
+
+Wrapping a folder name in square brackets (e.g. [slug]) creates a dynamic route segment which is used to generate multiple pages from data. e.g. blog posts, product pages, etc.
+
+By default, layouts in the folder hierarchy are also nested, which means they wrap child layouts via their children prop. You can nest layouts by adding layout inside specific route segments (folders).
+
+For example, to create a layout for the /blog route, add a new layout file inside the blog folder.
+
+If you were to combine the two layouts above, the root layout (app/layout.js) would wrap the blog layout (app/blog/layout.js), which would wrap the blog (app/blog/page.js) and blog post page (app/blog/[slug]/page.js).
+
+Dynamic segments allow you to create routes that are generated from data. For example, instead of manually creating a route for each individual blog post, you can create a dynamic segment to generate the routes based on blog post data.
+
+To create a dynamic segment, wrap the segment (folder) name in square brackets: [segmentName]. For example, in the app/blog/[slug]/page.tsx route, the [slug] is the dynamic segment.
+
+Learn more about Dynamic Segments and the params props.
+
+Nested layouts within Dynamic Segments, can also access the params props.
+
+In a Server Component page, you can access search parameters using the searchParams prop:
+
+Using searchParams opts your page into dynamic rendering because it requires an incoming request to read the search parameters from.
+
+Client Components can read search params using the useSearchParams hook.
+
+Learn more about useSearchParams in statically rendered and dynamically rendered routes.
+
+You can use the <Link> component to navigate between routes. <Link> is a built-in Next.js component that extends the HTML <a> tag to provide prefetching and client-side navigation.
+
+For example, to generate a list of blog posts, import <Link> from next/link and pass a href prop to the component:
+
+Good to know: <Link> is the primary way to navigate between routes in Next.js. You can also use the useRouter hook for more advanced navigation.
+
+Next.js exposes utility types that infer params and named slots from your route structure:
+
+These are globally available helpers, generated when running either next dev, next build or next typegen.
+
+Good to know
+
+Was this helpful?

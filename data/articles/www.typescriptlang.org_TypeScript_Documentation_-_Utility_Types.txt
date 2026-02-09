@@ -1,0 +1,109 @@
+Title: TypeScript: Documentation - Utility Types
+Source: https://www.typescriptlang.org/docs/handbook/utility-types.html
+
+TypeScript provides several utility types to facilitate common type transformations. These utilities are available globally.
+
+Released:
+4.5
+
+This type is meant to model operations like await in async functions, or the
+.then() method on Promises - specifically, the way that they recursively
+unwrap Promises.
+
+Released:
+2.1
+
+Constructs a type with all properties of Type set to optional. This utility will return a type that represents all subsets of a given type.
+
+Released:
+2.8
+
+Constructs a type consisting of all properties of Type set to required. The opposite of Partial.
+
+Released:
+2.1
+
+Constructs a type with all properties of Type set to readonly, meaning the properties of the constructed type cannot be reassigned.
+
+This utility is useful for representing assignment expressions that will fail at runtime (i.e. when attempting to reassign properties of a frozen object).
+
+Released:
+2.1
+
+Constructs an object type whose property keys are Keys and whose property values are Type. This utility can be used to map the properties of a type to another type.
+
+Released:
+2.1
+
+Constructs a type by picking the set of properties Keys (string literal or union of string literals) from Type.
+
+Released:
+3.5
+
+Constructs a type by picking all properties from Type and then removing Keys (string literal or union of string literals). The opposite of Pick.
+
+Released:
+2.8
+
+Constructs a type by excluding from UnionType all union members that are assignable to ExcludedMembers.
+
+Released:
+2.8
+
+Constructs a type by extracting from Type all union members that are assignable to Union.
+
+Released:
+2.8
+
+Constructs a type by excluding null and undefined from Type.
+
+Released:
+3.1
+
+Constructs a tuple type from the types used in the parameters of a function type Type.
+
+For overloaded functions, this will be the parameters of the last signature; see Inferring Within Conditional Types.
+
+Released:
+3.1
+
+Constructs a tuple or array type from the types of a constructor function type. It produces a tuple type with all the parameter types (or the type never if Type is not a function).
+
+Released:
+2.8
+
+Constructs a type consisting of the return type of function Type.
+
+For overloaded functions, this will be the return type of the last signature; see Inferring Within Conditional Types.
+
+Released:
+2.8
+
+Constructs a type consisting of the instance type of a constructor function in Type.
+
+Released:
+5.4
+
+Blocks inferences to the contained type. Other than blocking inferences, NoInfer<Type> is
+identical to Type.
+
+Released:
+3.3
+
+Extracts the type of the this parameter for a function type, or unknown if the function type has no this parameter.
+
+Released:
+3.3
+
+Removes the this parameter from Type. If Type has no explicitly declared this parameter, the result is simply Type. Otherwise, a new function type with no this parameter is created from Type. Generics are erased and only the last overload signature is propagated into the new function type.
+
+Released:
+2.3
+
+This utility does not return a transformed type. Instead, it serves as a marker for a contextual this type. Note that the noImplicitThis flag must be enabled to use this utility.
+
+In the example above, the methods object in the argument to makeObject has a contextual type that includes ThisType<D & M> and therefore the type of this in methods within the methods object is { x: number, y: number } & { moveBy(dx: number, dy: number): void }. Notice how the type of the methods property simultaneously is an inference target and a source for the this type in methods.
+
+The ThisType<T> marker interface is simply an empty interface declared in lib.d.ts. Beyond being recognized in the contextual type of an object literal, the interface acts like any empty interface.
+
+To help with string manipulation around template string literals, TypeScript includes a set of types which can be used in string manipulation within the type system. You can find those in the Template Literal Types documentation.

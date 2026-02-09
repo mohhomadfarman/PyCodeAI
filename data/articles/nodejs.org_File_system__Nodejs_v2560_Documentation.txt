@@ -1,0 +1,3168 @@
+Title: File system | Node.js v25.6.0 Documentation
+Source: https://nodejs.org/api/fs.html
+
+Source Code: lib/fs.js
+
+The node:fs module enables interacting with the file system in a
+way modeled on standard POSIX functions.
+
+To use the promise-based APIs:
+
+To use the callback and sync APIs:
+
+All file system operations have synchronous, callback, and promise-based
+forms, and are accessible using both CommonJS syntax and ES6 Modules (ESM).
+
+Promise-based operations return a promise that is fulfilled when the
+asynchronous operation is complete.
+
+The callback form takes a completion callback function as its last
+argument and invokes the operation asynchronously. The arguments passed to
+the completion callback depend on the method, but the first argument is always
+reserved for an exception. If the operation is completed successfully, then
+the first argument is null or undefined.
+
+The callback-based versions of the node:fs module APIs are preferable over
+the use of the promise APIs when maximal performance (both in terms of
+execution time and memory allocation) is required.
+
+The synchronous APIs block the Node.js event loop and further JavaScript
+execution until the operation is complete. Exceptions are thrown immediately
+and can be handled using try…catch, or can be allowed to bubble up.
+
+Exposed as require('fs/promises').
+
+This API is no longer experimental.
+
+The API is accessible via require('fs').promises only.
+
+Added in: v10.0.0
+
+The fs/promises API provides asynchronous file system methods that return
+promises.
+
+The promise APIs use the underlying Node.js threadpool to perform file
+system operations off the event loop thread. These operations are not
+synchronized or threadsafe. Care must be taken when performing multiple
+concurrent modifications on the same file or data corruption may occur.
+
+A <FileHandle> object is an object wrapper for a numeric file descriptor.
+
+Instances of the <FileHandle> object are created by the fsPromises.open()
+method.
+
+All <FileHandle> objects are <EventEmitter>s.
+
+If a <FileHandle> is not closed using the filehandle.close() method, it will
+try to automatically close the file descriptor and emit a process warning,
+helping to prevent memory leaks. Please do not rely on this behavior because
+it can be unreliable and the file may not be closed. Instead, always explicitly
+close <FileHandle>s. Node.js may change this behavior in the future.
+
+The 'close' event is emitted when the <FileHandle> has been closed and can no
+longer be used.
+
+The flush option is now supported.
+
+The data argument supports AsyncIterable, Iterable, and Stream.
+
+The data parameter won't coerce unsupported input to strings anymore.
+
+Added in: v10.0.0
+
+Alias of filehandle.writeFile().
+
+When operating on file handles, the mode cannot be changed from what it was set
+to with fsPromises.open(). Therefore, this is equivalent to
+filehandle.writeFile().
+
+Modifies the permissions on the file. See chmod(2).
+
+Changes the ownership of the file. A wrapper for chown(2).
+
+Closes the file handle after waiting for any pending operation on the handle to
+complete.
+
+options can include start and end values to read a range of bytes from
+the file instead of the entire file. Both start and end are inclusive and
+start counting at 0, allowed values are in the
+[0, Number.MAX_SAFE_INTEGER] range. If start is
+omitted or undefined, filehandle.createReadStream() reads sequentially from
+the current file position. The encoding can be any one of those accepted by
+<Buffer>.
+
+If the FileHandle points to a character device that only supports blocking
+reads (such as keyboard or sound card), read operations do not finish until data
+is available. This can prevent the process from exiting and the stream from
+closing naturally.
+
+By default, the stream will emit a 'close' event after it has been
+destroyed.  Set the emitClose option to false to change this behavior.
+
+If autoClose is false, then the file descriptor won't be closed, even if
+there's an error. It is the application's responsibility to close it and make
+sure there's no file descriptor leak. If autoClose is set to true (default
+behavior), on 'error' or 'end' the file descriptor will be closed
+automatically.
+
+An example to read the last 10 bytes of a file which is 100 bytes long:
+
+The flush option is now supported.
+
+Added in: v16.11.0
+
+options may also include a start option to allow writing data at some
+position past the beginning of the file, allowed values are in the
+[0, Number.MAX_SAFE_INTEGER] range. Modifying a file rather than
+replacing it may require the flags open option to be set to r+ rather than
+the default r. The encoding can be any one of those accepted by <Buffer>.
+
+If autoClose is set to true (default behavior) on 'error' or 'finish'
+the file descriptor will be closed automatically. If autoClose is false,
+then the file descriptor won't be closed, even if there's an error.
+It is the application's responsibility to close it and make sure there's no
+file descriptor leak.
+
+By default, the stream will emit a 'close' event after it has been
+destroyed.  Set the emitClose option to false to change this behavior.
+
+Forces all currently queued I/O operations associated with the file to the
+operating system's synchronized I/O completion state. Refer to the POSIX
+fdatasync(2) documentation for details.
+
+Unlike filehandle.sync this method does not flush modified metadata.
+
+Accepts bigint values as position.
+
+Added in: v10.0.0
+
+Reads data from the file and stores that in the given buffer.
+
+If the file is not modified concurrently, the end-of-file is reached when the
+number of bytes read is zero.
+
+Accepts bigint values as position.
+
+Added in: v13.11.0, v12.17.0
+
+Reads data from the file and stores that in the given buffer.
+
+If the file is not modified concurrently, the end-of-file is reached when the
+number of bytes read is zero.
+
+Accepts bigint values as position.
+
+Added in: v18.2.0, v16.17.0
+
+Reads data from the file and stores that in the given buffer.
+
+If the file is not modified concurrently, the end-of-file is reached when the
+number of bytes read is zero.
+
+Marking the API stable.
+
+Removed option to create a 'bytes' stream. Streams are now always 'bytes' streams.
+
+Added option to create a 'bytes' stream.
+
+Added in: v17.0.0
+
+Returns a byte-oriented ReadableStream that may be used to read the file's
+contents.
+
+An error will be thrown if this method is called more than once or is called
+after the FileHandle is closed or closing.
+
+While the ReadableStream will read the file to completion, it will not
+close the FileHandle automatically. User code must still call the
+fileHandle.close() method unless the autoClose option is set to true.
+
+Asynchronously reads the entire contents of a file.
+
+If options is a string, then it specifies the encoding.
+
+The <FileHandle> has to support reading.
+
+If one or more filehandle.read() calls are made on a file handle and then a
+filehandle.readFile() call is made, the data will be read from the current
+position till the end of the file. It doesn't always read from the beginning
+of the file.
+
+Convenience method to create a readline interface and stream over the file.
+See filehandle.createReadStream() for the options.
+
+Read from a file and write to an array of <ArrayBufferView>s
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+Added in: v10.0.0
+
+Request that all data for the open file descriptor is flushed to the storage
+device. The specific implementation is operating system and device specific.
+Refer to the POSIX fsync(2) documentation for more detail.
+
+Truncates the file.
+
+If the file was larger than len bytes, only the first len bytes will be
+retained in the file.
+
+The following example retains only the first four bytes of the file:
+
+If the file previously was shorter than len bytes, it is extended, and the
+extended part is filled with null bytes ('\0'):
+
+If len is negative then 0 will be used.
+
+Change the file system timestamps of the object referenced by the <FileHandle>
+then fulfills the promise with no arguments upon success.
+
+The buffer parameter won't coerce unsupported input to buffers anymore.
+
+Added in: v10.0.0
+
+Write buffer to the file.
+
+The promise is fulfilled with an object containing two properties:
+
+It is unsafe to use filehandle.write() multiple times on the same file
+without waiting for the promise to be fulfilled (or rejected). For this
+scenario, use filehandle.createWriteStream().
+
+On Linux, positional writes do not work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+Write buffer to the file.
+
+Similar to the above filehandle.write function, this version takes an
+optional options object. If no options object is specified, it will
+default with the above values.
+
+The string parameter won't coerce unsupported input to strings anymore.
+
+Added in: v10.0.0
+
+Write string to the file. If string is not a string, the promise is
+rejected with an error.
+
+The promise is fulfilled with an object containing two properties:
+
+It is unsafe to use filehandle.write() multiple times on the same file
+without waiting for the promise to be fulfilled (or rejected). For this
+scenario, use filehandle.createWriteStream().
+
+On Linux, positional writes do not work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+The data argument supports AsyncIterable, Iterable, and Stream.
+
+The data parameter won't coerce unsupported input to strings anymore.
+
+Added in: v10.0.0
+
+Asynchronously writes data to a file, replacing the file if it already exists.
+data can be a string, a buffer, an <AsyncIterable>, or an <Iterable> object.
+The promise is fulfilled with no arguments upon success.
+
+If options is a string, then it specifies the encoding.
+
+The <FileHandle> has to support writing.
+
+It is unsafe to use filehandle.writeFile() multiple times on the same file
+without waiting for the promise to be fulfilled (or rejected).
+
+If one or more filehandle.write() calls are made on a file handle and then a
+filehandle.writeFile() call is made, the data will be written from the
+current position till the end of the file. It doesn't always write from the
+beginning of the file.
+
+Write an array of <ArrayBufferView>s to the file.
+
+The promise is fulfilled with an object containing a two properties:
+
+It is unsafe to call writev() multiple times on the same file without waiting
+for the promise to be fulfilled (or rejected).
+
+On Linux, positional writes don't work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+No longer experimental.
+
+Added in: v20.4.0, v18.18.0
+
+Calls filehandle.close() and returns a promise that fulfills when the
+filehandle is closed.
+
+Tests a user's permissions for the file or directory specified by path.
+The mode argument is an optional integer that specifies the accessibility
+checks to be performed. mode should be either the value fs.constants.F_OK
+or a mask consisting of the bitwise OR of any of fs.constants.R_OK,
+fs.constants.W_OK, and fs.constants.X_OK (e.g.
+fs.constants.W_OK | fs.constants.R_OK). Check File access constants for
+possible values of mode.
+
+If the accessibility check is successful, the promise is fulfilled with no
+value. If any of the accessibility checks fail, the promise is rejected
+with an <Error> object. The following example checks if the file
+/etc/passwd can be read and written by the current process.
+
+Using fsPromises.access() to check for the accessibility of a file before
+calling fsPromises.open() is not recommended. Doing so introduces a race
+condition, since other processes may change the file's state between the two
+calls. Instead, user code should open/read/write the file directly and handle
+the error raised if the file is not accessible.
+
+The flush option is now supported.
+
+Added in: v10.0.0
+
+Asynchronously append data to a file, creating the file if it does not yet
+exist. data can be a string or a <Buffer>.
+
+If options is a string, then it specifies the encoding.
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+The path may be specified as a <FileHandle> that has been opened
+for appending (using fsPromises.open()).
+
+Changes the permissions of a file.
+
+Changes the ownership of a file.
+
+Changed flags argument to mode and imposed stricter type validation.
+
+Added in: v10.0.0
+
+Asynchronously copies src to dest. By default, dest is overwritten if it
+already exists.
+
+No guarantees are made about the atomicity of the copy operation. If an
+error occurs after the destination file has been opened for writing, an attempt
+will be made to remove the destination.
+
+This API is no longer experimental.
+
+Accept an additional mode option to specify the copy behavior as the mode argument of fs.copyFile().
+
+Accepts an additional verbatimSymlinks option to specify whether to perform path resolution for symlinks.
+
+Added in: v16.7.0
+
+Asynchronously copies the entire directory structure from src to dest,
+including subdirectories and files.
+
+When copying a directory to another directory, globs are not supported and
+behavior is similar to cp dir1/ dir2/.
+
+Add support for URL instances for cwd option.
+
+Marking the API stable.
+
+Add support for exclude option to accept glob patterns.
+
+Add support for withFileTypes as an option.
+
+Added in: v22.0.0
+
+Changes the permissions on a symbolic link.
+
+This method is only implemented on macOS.
+
+This API is no longer deprecated.
+
+Added in: v10.0.0
+
+Changes the ownership on a symbolic link.
+
+Changes the access and modification times of a file in the same way as
+fsPromises.utimes(), with the difference that if the path refers to a
+symbolic link, then the link is not dereferenced: instead, the timestamps of
+the symbolic link itself are changed.
+
+Creates a new link from the existingPath to the newPath. See the POSIX
+link(2) documentation for more detail.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+Added in: v10.0.0
+
+Equivalent to fsPromises.stat() unless path refers to a symbolic link,
+in which case the link itself is stat-ed, not the file that it refers to.
+Refer to the POSIX lstat(2) document for more detail.
+
+Asynchronously creates a directory.
+
+The optional options argument can be an integer specifying mode (permission
+and sticky bits), or an object with a mode property and a recursive
+property indicating whether parent directories should be created. Calling
+fsPromises.mkdir() when path is a directory that exists results in a
+rejection only when recursive is false.
+
+The prefix parameter now accepts buffers and URL.
+
+The prefix parameter now accepts an empty string.
+
+Added in: v10.0.0
+
+Creates a unique temporary directory. A unique directory name is generated by
+appending six random characters to the end of the provided prefix. Due to
+platform inconsistencies, avoid trailing X characters in prefix. Some
+platforms, notably the BSDs, can return more than six random characters, and
+replace trailing X characters in prefix with random characters.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use.
+
+The fsPromises.mkdtemp() method will append the six randomly selected
+characters directly to the prefix string. For instance, given a directory
+/tmp, if the intention is to create a temporary directory within /tmp, the
+prefix must end with a trailing platform-specific path separator
+(require('node:path').sep).
+
+The resulting Promise holds an async-disposable object whose path property
+holds the created directory path. When the object is disposed, the directory
+and its contents will be removed asynchronously if it still exists. If the
+directory cannot be deleted, disposal will throw an error. The object has an
+async remove() method which will perform the same task.
+
+Both this function and the disposal function on the resulting object are
+async, so it should be used with await + await using as in
+await using dir = await fsPromises.mkdtempDisposable('prefix').
+
+For detailed information, see the documentation of fsPromises.mkdtemp().
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use.
+
+The flags argument is now optional and defaults to 'r'.
+
+Added in: v10.0.0
+
+Opens a <FileHandle>.
+
+Refer to the POSIX open(2) documentation for more detail.
+
+Some characters (< > : " / \ | ? *) are reserved under Windows as documented
+by Naming Files, Paths, and Namespaces. Under NTFS, if the filename contains
+a colon, Node.js will open a file system stream, as described by
+this MSDN page.
+
+Added recursive option.
+
+The bufferSize option was introduced.
+
+Added in: v12.12.0
+
+Asynchronously open a directory for iterative scanning. See the POSIX
+opendir(3) documentation for more detail.
+
+Creates an <fs.Dir>, which contains all further functions for reading from
+and cleaning up the directory.
+
+The encoding option sets the encoding for the path while opening the
+directory and subsequent read operations.
+
+Example using async iteration:
+
+When using the async iterator, the <fs.Dir> object will be automatically
+closed after the iterator exits.
+
+Added recursive option.
+
+New option withFileTypes was added.
+
+Added in: v10.0.0
+
+Reads the contents of a directory.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the filenames. If the encoding is set to 'buffer', the filenames returned
+will be passed as <Buffer> objects.
+
+If options.withFileTypes is set to true, the returned array will contain
+<fs.Dirent> objects.
+
+The options argument may include an AbortSignal to abort an ongoing readFile request.
+
+Added in: v10.0.0
+
+Asynchronously reads the entire contents of a file.
+
+If no encoding is specified (using options.encoding), the data is returned
+as a <Buffer> object. Otherwise, the data will be a string.
+
+If options is a string, then it specifies the encoding.
+
+When the path is a directory, the behavior of fsPromises.readFile() is
+platform-specific. On macOS, Linux, and Windows, the promise will be rejected
+with an error. On FreeBSD, a representation of the directory's contents will be
+returned.
+
+An example of reading a package.json file located in the same directory of the
+running code:
+
+It is possible to abort an ongoing readFile using an <AbortSignal>. If a
+request is aborted the promise returned is rejected with an AbortError:
+
+Aborting an ongoing request does not abort individual operating
+system requests but rather the internal buffering fs.readFile performs.
+
+Any specified <FileHandle> has to support reading.
+
+Reads the contents of the symbolic link referred to by path. See the POSIX
+readlink(2) documentation for more detail. The promise is fulfilled with the
+linkString upon success.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the link path returned. If the encoding is set to 'buffer', the link path
+returned will be passed as a <Buffer> object.
+
+Determines the actual location of path using the same semantics as the
+fs.realpath.native() function.
+
+Only paths that can be converted to UTF8 strings are supported.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the path. If the encoding is set to 'buffer', the path returned will be
+passed as a <Buffer> object.
+
+On Linux, when Node.js is linked against musl libc, the procfs file system must
+be mounted on /proc in order for this function to work. Glibc does not have
+this restriction.
+
+Renames oldPath to newPath.
+
+Remove recursive option.
+
+Using fsPromises.rmdir(path, { recursive: true }) on a path that is a file is no longer permitted and results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+
+Using fsPromises.rmdir(path, { recursive: true }) on a path that does not exist is no longer permitted and results in a ENOENT error.
+
+The recursive option is deprecated, using it triggers a deprecation warning.
+
+The recursive option is deprecated, use fsPromises.rm instead.
+
+The maxBusyTries option is renamed to maxRetries, and its default is 0. The emfileWait option has been removed, and EMFILE errors use the same retry logic as other errors. The retryDelay option is now supported. ENFILE errors are now retried.
+
+The recursive, maxBusyTries, and emfileWait options are now supported.
+
+Added in: v10.0.0
+
+Removes the directory identified by path.
+
+Using fsPromises.rmdir() on a file (not a directory) results in the
+promise being rejected with an ENOENT error on Windows and an ENOTDIR
+error on POSIX.
+
+To get a behavior similar to the rm -rf Unix command, use
+fsPromises.rm() with options { recursive: true, force: true }.
+
+Removes files and directories (modeled on the standard POSIX rm utility).
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+Added in: v10.0.0
+
+If the type argument is null or omitted, Node.js will autodetect target type and automatically select dir or file.
+
+Added in: v10.0.0
+
+Creates a symbolic link.
+
+The type argument is only used on Windows platforms and can be one of 'dir',
+'file', or 'junction'. If the type argument is null, Node.js will
+autodetect target type and use 'file' or 'dir'. If the target does not
+exist, 'file' will be used. Windows junction points require the destination
+path to be absolute. When using 'junction', the target argument will
+automatically be normalized to absolute path. Junction points on NTFS volumes
+can only point to directories.
+
+Truncates (shortens or extends the length) of the content at path to len
+bytes.
+
+If path refers to a symbolic link, then the link is removed without affecting
+the file or directory to which that link refers. If the path refers to a file
+path that is not a symbolic link, the file is deleted. See the POSIX unlink(2)
+documentation for more detail.
+
+Change the file system timestamps of the object referenced by path.
+
+The atime and mtime arguments follow these rules:
+
+Returns an async iterator that watches for changes on filename, where filename
+is either a file or a directory.
+
+On most platforms, 'rename' is emitted whenever a filename appears or
+disappears in the directory.
+
+All the caveats for fs.watch() also apply to fsPromises.watch().
+
+The flush option is now supported.
+
+The data argument supports AsyncIterable, Iterable, and Stream.
+
+The options argument may include an AbortSignal to abort an ongoing writeFile request.
+
+The data parameter won't coerce unsupported input to strings anymore.
+
+Added in: v10.0.0
+
+Asynchronously writes data to a file, replacing the file if it already exists.
+data can be a string, a buffer, an <AsyncIterable>, or an <Iterable> object.
+
+The encoding option is ignored if data is a buffer.
+
+If options is a string, then it specifies the encoding.
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+Any specified <FileHandle> has to support writing.
+
+It is unsafe to use fsPromises.writeFile() multiple times on the same file
+without waiting for the promise to be settled.
+
+Similarly to fsPromises.readFile - fsPromises.writeFile is a convenience
+method that performs multiple write calls internally to write the buffer
+passed to it. For performance sensitive code consider using
+fs.createWriteStream() or filehandle.createWriteStream().
+
+It is possible to use an <AbortSignal> to cancel an fsPromises.writeFile().
+Cancelation is "best effort", and some amount of data is likely still
+to be written.
+
+Aborting an ongoing request does not abort individual operating
+system requests but rather the internal buffering fs.writeFile performs.
+
+Returns an object containing commonly used constants for file system
+operations. The object is the same as fs.constants. See FS constants
+for more details.
+
+The callback APIs perform all operations asynchronously, without blocking the
+event loop, then invoke a callback function upon completion or error.
+
+The callback APIs use the underlying Node.js threadpool to perform file
+system operations off the event loop thread. These operations are not
+synchronized or threadsafe. Care must be taken when performing multiple
+concurrent modifications on the same file or data corruption may occur.
+
+The constants fs.F_OK, fs.R_OK, fs.W_OK and fs.X_OK which were present directly on fs are removed.
+
+The constants fs.F_OK, fs.R_OK, fs.W_OK and fs.X_OK which were present directly on fs are deprecated.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The constants like fs.R_OK, etc which were present directly on fs were moved into fs.constants as a soft deprecation. Thus for Node.js < v6.3.0 use fs to access those constants, or do something like (fs.constants || fs).R_OK to work with all versions.
+
+Added in: v0.11.15
+
+Tests a user's permissions for the file or directory specified by path.
+The mode argument is an optional integer that specifies the accessibility
+checks to be performed. mode should be either the value fs.constants.F_OK
+or a mask consisting of the bitwise OR of any of fs.constants.R_OK,
+fs.constants.W_OK, and fs.constants.X_OK (e.g.
+fs.constants.W_OK | fs.constants.R_OK). Check File access constants for
+possible values of mode.
+
+The final argument, callback, is a callback function that is invoked with
+a possible error argument. If any of the accessibility checks fail, the error
+argument will be an Error object. The following examples check if
+package.json exists, and if it is readable or writable.
+
+Do not use fs.access() to check for the accessibility of a file before calling
+fs.open(), fs.readFile(), or fs.writeFile(). Doing
+so introduces a race condition, since other processes may change the file's
+state between the two calls. Instead, user code should open/read/write the
+file directly and handle the error raised if the file is not accessible.
+
+write (NOT RECOMMENDED)
+
+write (RECOMMENDED)
+
+read (NOT RECOMMENDED)
+
+read (RECOMMENDED)
+
+The "not recommended" examples above check for accessibility and then use the
+file; the "recommended" examples are better because they use the file directly
+and handle the error, if any.
+
+In general, check for the accessibility of a file only if the file will not be
+used directly, for example when its accessibility is a signal from another
+process.
+
+On Windows, access-control policies (ACLs) on a directory may limit access to
+a file or directory. The fs.access() function, however, does not check the
+ACL and therefore may report that a path is accessible even if the ACL restricts
+the user from reading or writing to it.
+
+The flush option is now supported.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+The passed options object will never be modified.
+
+The file parameter can be a file descriptor now.
+
+Added in: v0.6.7
+
+Asynchronously append data to a file, creating the file if it does not yet
+exist. data can be a string or a <Buffer>.
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+If options is a string, then it specifies the encoding:
+
+The path may be specified as a numeric file descriptor that has been opened
+for appending (using fs.open() or fs.openSync()). The file descriptor will
+not be closed automatically.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.30
+
+Asynchronously changes the permissions of a file. No arguments other than a
+possible exception are given to the completion callback.
+
+See the POSIX chmod(2) documentation for more detail.
+
+The mode argument used in both the fs.chmod() and fs.chmodSync()
+methods is a numeric bitmask created using a logical OR of the following
+constants:
+
+An easier method of constructing the mode is to use a sequence of three
+octal digits (e.g. 765). The left-most digit (7 in the example), specifies
+the permissions for the file owner. The middle digit (6 in the example),
+specifies permissions for the group. The right-most digit (5 in the example),
+specifies the permissions for others.
+
+For example, the octal value 0o765 means:
+
+When using raw numbers where file modes are expected, any value larger than
+0o777 may result in platform-specific behaviors that are not supported to work
+consistently. Therefore constants like S_ISVTX, S_ISGID, or S_ISUID are
+not exposed in fs.constants.
+
+Caveats: on Windows only the write permission can be changed, and the
+distinction among the permissions of group, owner, or others is not
+implemented.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.97
+
+Asynchronously changes owner and group of a file. No arguments other than a
+possible exception are given to the completion callback.
+
+See the POSIX chown(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+A default callback is now used if one is not provided.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Closes the file descriptor. No arguments other than a possible exception are
+given to the completion callback.
+
+Calling fs.close() on any file descriptor (fd) that is currently in use
+through any other fs operation may lead to undefined behavior.
+
+See the POSIX close(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Changed flags argument to mode and imposed stricter type validation.
+
+Added in: v8.5.0
+
+Asynchronously copies src to dest. By default, dest is overwritten if it
+already exists. No arguments other than a possible exception are given to the
+callback function. Node.js makes no guarantees about the atomicity of the copy
+operation. If an error occurs after the destination file has been opened for
+writing, Node.js will attempt to remove the destination.
+
+mode is an optional integer that specifies the behavior
+of the copy operation. It is possible to create a mask consisting of the bitwise
+OR of two or more values (e.g.
+fs.constants.COPYFILE_EXCL | fs.constants.COPYFILE_FICLONE).
+
+This API is no longer experimental.
+
+Accept an additional mode option to specify the copy behavior as the mode argument of fs.copyFile().
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Accepts an additional verbatimSymlinks option to specify whether to perform path resolution for symlinks.
+
+Added in: v16.7.0
+
+Asynchronously copies the entire directory structure from src to dest,
+including subdirectories and files.
+
+When copying a directory to another directory, globs are not supported and
+behavior is similar to cp dir1/ dir2/.
+
+The fs option does not need open method if an fd was provided.
+
+The fs option does not need close method if autoClose is false.
+
+Add support for AbortSignal.
+
+The fd option accepts FileHandle arguments.
+
+Change emitClose default to true.
+
+The fs options allow overriding the used fs implementation.
+
+Enable emitClose option.
+
+Impose new restrictions on start and end, throwing more appropriate errors in cases when we cannot reasonably handle the input values.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The passed options object will never be modified.
+
+The passed options object can be a string now.
+
+Added in: v0.1.31
+
+options can include start and end values to read a range of bytes from
+the file instead of the entire file. Both start and end are inclusive and
+start counting at 0, allowed values are in the
+[0, Number.MAX_SAFE_INTEGER] range. If fd is specified and start is
+omitted or undefined, fs.createReadStream() reads sequentially from the
+current file position. The encoding can be any one of those accepted by
+<Buffer>.
+
+If fd is specified, ReadStream will ignore the path argument and will use
+the specified file descriptor. This means that no 'open' event will be
+emitted. fd should be blocking; non-blocking fds should be passed to
+<net.Socket>.
+
+If fd points to a character device that only supports blocking reads
+(such as keyboard or sound card), read operations do not finish until data is
+available. This can prevent the process from exiting and the stream from
+closing naturally.
+
+By default, the stream will emit a 'close' event after it has been
+destroyed.  Set the emitClose option to false to change this behavior.
+
+By providing the fs option, it is possible to override the corresponding fs
+implementations for open, read, and close. When providing the fs option,
+an override for read is required. If no fd is provided, an override for
+open is also required. If autoClose is true, an override for close is
+also required.
+
+If autoClose is false, then the file descriptor won't be closed, even if
+there's an error. It is the application's responsibility to close it and make
+sure there's no file descriptor leak. If autoClose is set to true (default
+behavior), on 'error' or 'end' the file descriptor will be closed
+automatically.
+
+mode sets the file mode (permission and sticky bits), but only if the
+file was created.
+
+An example to read the last 10 bytes of a file which is 100 bytes long:
+
+If options is a string, then it specifies the encoding.
+
+The flush option is now supported.
+
+The fs option does not need open method if an fd was provided.
+
+The fs option does not need close method if autoClose is false.
+
+Add support for AbortSignal.
+
+The fd option accepts FileHandle arguments.
+
+Change emitClose default to true.
+
+The fs options allow overriding the used fs implementation.
+
+Enable emitClose option.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The passed options object will never be modified.
+
+The autoClose option is supported now.
+
+The passed options object can be a string now.
+
+Added in: v0.1.31
+
+options may also include a start option to allow writing data at some
+position past the beginning of the file, allowed values are in the
+[0, Number.MAX_SAFE_INTEGER] range. Modifying a file rather than
+replacing it may require the flags option to be set to r+ rather than the
+default w. The encoding can be any one of those accepted by <Buffer>.
+
+If autoClose is set to true (default behavior) on 'error' or 'finish'
+the file descriptor will be closed automatically. If autoClose is false,
+then the file descriptor won't be closed, even if there's an error.
+It is the application's responsibility to close it and make sure there's no
+file descriptor leak.
+
+By default, the stream will emit a 'close' event after it has been
+destroyed.  Set the emitClose option to false to change this behavior.
+
+By providing the fs option it is possible to override the corresponding fs
+implementations for open, write, writev, and close. Overriding write()
+without writev() can reduce performance as some optimizations (_writev())
+will be disabled. When providing the fs option, overrides for at least one of
+write and writev are required. If no fd option is supplied, an override
+for open is also required. If autoClose is true, an override for close
+is also required.
+
+Like <fs.ReadStream>, if fd is specified, <fs.WriteStream> will ignore the
+path argument and will use the specified file descriptor. This means that no
+'open' event will be emitted. fd should be blocking; non-blocking fds
+should be passed to <net.Socket>.
+
+If options is a string, then it specifies the encoding.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Deprecated since: v1.0.0
+
+Added in: v0.0.2
+
+Test whether or not the element at the given path exists by checking with the file system.
+Then call the callback argument with either true or false:
+
+The parameters for this callback are not consistent with other Node.js
+callbacks. Normally, the first parameter to a Node.js callback is an err
+parameter, optionally followed by other parameters. The fs.exists() callback
+has only one boolean parameter. This is one reason fs.access() is recommended
+instead of fs.exists().
+
+If path is a symbolic link, it is followed. Thus, if path exists but points
+to a non-existent element, the callback will receive the value false.
+
+Using fs.exists() to check for the existence of a file before calling
+fs.open(), fs.readFile(), or fs.writeFile() is not recommended. Doing
+so introduces a race condition, since other processes may change the file's
+state between the two calls. Instead, user code should open/read/write the
+file directly and handle the error raised if the file does not exist.
+
+write (NOT RECOMMENDED)
+
+write (RECOMMENDED)
+
+read (NOT RECOMMENDED)
+
+read (RECOMMENDED)
+
+The "not recommended" examples above check for existence and then use the
+file; the "recommended" examples are better because they use the file directly
+and handle the error, if any.
+
+In general, check for the existence of a file only if the file won't be
+used directly, for example when its existence is a signal from another
+process.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.4.7
+
+Sets the permissions on the file. No arguments other than a possible exception
+are given to the completion callback.
+
+See the POSIX fchmod(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.4.7
+
+Sets the owner of the file. No arguments other than a possible exception are
+given to the completion callback.
+
+See the POSIX fchown(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.96
+
+Forces all currently queued I/O operations associated with the file to the
+operating system's synchronized I/O completion state. Refer to the POSIX
+fdatasync(2) documentation for details. No arguments other than a possible
+exception are given to the completion callback.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.95
+
+Invokes the callback with the <fs.Stats> for the file descriptor.
+
+See the POSIX fstat(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.96
+
+Request that all data for the open file descriptor is flushed to the storage
+device. The specific implementation is operating system and device specific.
+Refer to the POSIX fsync(2) documentation for more detail. No arguments other
+than a possible exception are given to the completion callback.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.8.6
+
+Truncates the file descriptor. No arguments other than a possible exception are
+given to the completion callback.
+
+See the POSIX ftruncate(2) documentation for more detail.
+
+If the file referred to by the file descriptor was larger than len bytes, only
+the first len bytes will be retained in the file.
+
+For example, the following program retains only the first four bytes of the
+file:
+
+If the file previously was shorter than len bytes, it is extended, and the
+extended part is filled with null bytes ('\0'):
+
+If len is negative then 0 will be used.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Numeric strings, NaN, and Infinity are now allowed time specifiers.
+
+Added in: v0.4.2
+
+Change the file system timestamps of the object referenced by the supplied file
+descriptor. See fs.utimes().
+
+Add support for URL instances for cwd option.
+
+Marking the API stable.
+
+Add support for exclude option to accept glob patterns.
+
+Add support for withFileTypes as an option.
+
+Added in: v22.0.0
+
+pattern <string> | <string[]>
+
+options <Object>
+
+callback <Function>
+
+Retrieves the files matching the specified pattern.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The error returned may be an AggregateError if more than one error is returned.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Deprecated since: v0.4.7
+
+Changes the permissions on a symbolic link. No arguments other than a possible
+exception are given to the completion callback.
+
+This method is only implemented on macOS.
+
+See the POSIX lchmod(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+This API is no longer deprecated.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Documentation-only deprecation.
+
+Set the owner of the symbolic link. No arguments other than a possible
+exception are given to the completion callback.
+
+See the POSIX lchown(2) documentation for more detail.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Added in: v14.5.0, v12.19.0
+
+Changes the access and modification times of a file in the same way as
+fs.utimes(), with the difference that if the path refers to a symbolic
+link, then the link is not dereferenced: instead, the timestamps of the
+symbolic link itself are changed.
+
+No arguments other than a possible exception are given to the completion
+callback.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The existingPath and newPath parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.31
+
+Creates a new link from the existingPath to the newPath. See the POSIX
+link(2) documentation for more detail. No arguments other than a possible
+exception are given to the completion callback.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.30
+
+Retrieves the <fs.Stats> for the symbolic link referred to by the path.
+The callback gets two arguments (err, stats) where stats is a <fs.Stats>
+object. lstat() is identical to stat(), except that if path is a symbolic
+link, then the link itself is stat-ed, not the file that it refers to.
+
+See the POSIX lstat(2) documentation for more details.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+In recursive mode, the callback now receives the first created path as an argument.
+
+The second argument can now be an options object with recursive and mode properties.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.8
+
+Asynchronously creates a directory.
+
+The callback is given a possible exception and, if recursive is true, the
+first directory path created, (err[, path]).
+path can still be undefined when recursive is true, if no directory was
+created (for instance, if it was previously created).
+
+The optional options argument can be an integer specifying mode (permission
+and sticky bits), or an object with a mode property and a recursive
+property indicating whether parent directories should be created. Calling
+fs.mkdir() when path is a directory that exists results in an error only
+when recursive is false. If recursive is false and the directory exists,
+an EEXIST error occurs.
+
+On Windows, using fs.mkdir() on the root directory even with recursion will
+result in an error:
+
+See the POSIX mkdir(2) documentation for more details.
+
+The prefix parameter now accepts buffers and URL.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The prefix parameter now accepts an empty string.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+The callback parameter is optional now.
+
+Added in: v5.10.0
+
+Creates a unique temporary directory.
+
+Generates six random characters to be appended behind a required
+prefix to create a unique temporary directory. Due to platform
+inconsistencies, avoid trailing X characters in prefix. Some platforms,
+notably the BSDs, can return more than six random characters, and replace
+trailing X characters in prefix with random characters.
+
+The created directory path is passed as a string to the callback's second
+parameter.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use.
+
+The fs.mkdtemp() method will append the six randomly selected characters
+directly to the prefix string. For instance, given a directory /tmp, if the
+intention is to create a temporary directory within /tmp, the prefix
+must end with a trailing platform-specific path separator
+(require('node:path').sep).
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The flags argument is now optional and defaults to 'r'.
+
+The as and as+ flags are supported now.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.0.2
+
+Asynchronous file open. See the POSIX open(2) documentation for more details.
+
+mode sets the file mode (permission and sticky bits), but only if the file was
+created. On Windows, only the write permission can be manipulated; see
+fs.chmod().
+
+The callback gets two arguments (err, fd).
+
+Some characters (< > : " / \ | ? *) are reserved under Windows as documented
+by Naming Files, Paths, and Namespaces. Under NTFS, if the filename contains
+a colon, Node.js will open a file system stream, as described by
+this MSDN page.
+
+Functions based on fs.open() exhibit this behavior as well:
+fs.writeFile(), fs.readFile(), etc.
+
+Marking the API stable.
+
+Added in: v19.8.0
+
+Returns a <Blob> whose data is backed by the given file.
+
+The file must not be modified after the <Blob> is created. Any modifications
+will cause reading the <Blob> data to fail with a DOMException error.
+Synchronous stat operations on the file when the Blob is created, and before
+each read in order to detect whether the file data has been modified on disk.
+
+Added recursive option.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The bufferSize option was introduced.
+
+Added in: v12.12.0
+
+Asynchronously open a directory. See the POSIX opendir(3) documentation for
+more details.
+
+Creates an <fs.Dir>, which contains all further functions for reading from
+and cleaning up the directory.
+
+The encoding option sets the encoding for the path while opening the
+directory and subsequent read operations.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The buffer parameter can now be any TypedArray, or a DataView.
+
+The buffer parameter can now be a Uint8Array.
+
+The length parameter can now be 0.
+
+Added in: v0.0.2
+
+Read data from the file specified by fd.
+
+The callback is given the three arguments, (err, bytesRead, buffer).
+
+If the file is not modified concurrently, the end-of-file is reached when the
+number of bytes read is zero.
+
+If this method is invoked as its util.promisify()ed version, it returns
+a promise for an Object with bytesRead and buffer properties.
+
+The fs.read() method reads data from the file specified
+by the file descriptor (fd).
+The length argument indicates the maximum number
+of bytes that Node.js
+will attempt to read from the kernel.
+However, the actual number of bytes read (bytesRead) can be lower
+than the specified length for various reasons.
+
+For example:
+
+Therefore, when using fs.read(), it's important to
+check the bytesRead value to
+determine how many bytes were actually read from the file.
+Depending on your application
+logic, you may need to handle cases where bytesRead
+is lower than the specified length,
+such as by wrapping the read call in a loop if you require
+a minimum amount of bytes.
+
+This behavior is similar to the POSIX preadv2 function.
+
+Options object can be passed in to make buffer, offset, length, and position optional.
+
+Added in: v13.11.0, v12.17.0
+
+Similar to the fs.read() function, this version takes an optional
+options object. If no options object is specified, it will default with the
+above values.
+
+Similar to the fs.read() function, this version takes an optional
+options object. If no options object is specified, it will default with the
+above values.
+
+Added recursive option.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+New option withFileTypes was added.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+The options parameter was added.
+
+Added in: v0.1.8
+
+Reads the contents of a directory. The callback gets two arguments (err, files)
+where files is an array of the names of the files in the directory excluding
+'.' and '..'.
+
+See the POSIX readdir(3) documentation for more details.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the filenames passed to the callback. If the encoding is set to 'buffer',
+the filenames returned will be passed as <Buffer> objects.
+
+If options.withFileTypes is set to true, the files array will contain
+<fs.Dirent> objects.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The error returned may be an AggregateError if more than one error is returned.
+
+The options argument may include an AbortSignal to abort an ongoing readFile request.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+The callback will always be called with null as the error parameter in case of success.
+
+The path parameter can be a file descriptor now.
+
+Added in: v0.1.29
+
+Asynchronously reads the entire contents of a file.
+
+The callback is passed two arguments (err, data), where data is the
+contents of the file.
+
+If no encoding is specified, then the raw buffer is returned.
+
+If options is a string, then it specifies the encoding:
+
+When the path is a directory, the behavior of fs.readFile() and
+fs.readFileSync() is platform-specific. On macOS, Linux, and Windows, an
+error will be returned. On FreeBSD, a representation of the directory's contents
+will be returned.
+
+It is possible to abort an ongoing request using an AbortSignal. If a
+request is aborted the callback is called with an AbortError:
+
+The fs.readFile() function buffers the entire file. To minimize memory costs,
+when possible prefer streaming via fs.createReadStream().
+
+Aborting an ongoing request does not abort individual operating
+system requests but rather the internal buffering fs.readFile performs.
+
+The fs.readFile() method asynchronously reads the contents of a file into
+memory one chunk at a time, allowing the event loop to turn between each chunk.
+This allows the read operation to have less impact on other activity that may
+be using the underlying libuv thread pool but means that it will take longer
+to read a complete file into memory.
+
+The additional read overhead can vary broadly on different systems and depends
+on the type of file being read. If the file type is not a regular file (a pipe
+for instance) and Node.js is unable to determine an actual file size, each read
+operation will load on 64 KiB of data. For regular files, each read will process
+512 KiB of data.
+
+For applications that require as-fast-as-possible reading of file contents, it
+is better to use fs.read() directly and for application code to manage
+reading the full contents of the file itself.
+
+The Node.js GitHub issue #25741 provides more information and a detailed
+analysis on the performance of fs.readFile() for multiple file sizes in
+different Node.js versions.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.1.31
+
+Reads the contents of the symbolic link referred to by path. The callback gets
+two arguments (err, linkString).
+
+See the POSIX readlink(2) documentation for more details.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the link path passed to the callback. If the encoding is set to 'buffer',
+the link path returned will be passed as a <Buffer> object.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Added in: v13.13.0, v12.17.0
+
+Read from a file specified by fd and write to an array of ArrayBufferViews
+using readv().
+
+position is the offset from the beginning of the file from where data
+should be read. If typeof position !== 'number', the data will be read
+from the current position.
+
+The callback will be given three arguments: err, bytesRead, and
+buffers. bytesRead is how many bytes were read from the file.
+
+If this method is invoked as its util.promisify()ed version, it returns
+a promise for an Object with bytesRead and buffers properties.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+Pipe/Socket resolve support was added.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Calling realpath now works again for various edge cases on Windows.
+
+The cache parameter was removed.
+
+Added in: v0.1.31
+
+Asynchronously computes the canonical pathname by resolving ., .., and
+symbolic links.
+
+A canonical pathname is not necessarily unique. Hard links and bind mounts can
+expose a file system entity through many pathnames.
+
+This function behaves like realpath(3), with some exceptions:
+
+No case conversion is performed on case-insensitive file systems.
+
+The maximum number of symbolic links is platform-independent and generally
+(much) higher than what the native realpath(3) implementation supports.
+
+The callback gets two arguments (err, resolvedPath). May use process.cwd
+to resolve relative paths.
+
+Only paths that can be converted to UTF8 strings are supported.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the path passed to the callback. If the encoding is set to 'buffer',
+the path returned will be passed as a <Buffer> object.
+
+If path resolves to a socket or a pipe, the function will return a system
+dependent name for that object.
+
+A path that does not exist results in an ENOENT error.
+error.path is the absolute file path.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Added in: v9.2.0
+
+Asynchronous realpath(3).
+
+The callback gets two arguments (err, resolvedPath).
+
+Only paths that can be converted to UTF8 strings are supported.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the path passed to the callback. If the encoding is set to 'buffer',
+the path returned will be passed as a <Buffer> object.
+
+On Linux, when Node.js is linked against musl libc, the procfs file system must
+be mounted on /proc in order for this function to work. Glibc does not have
+this restriction.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The oldPath and newPath parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Asynchronously rename file at oldPath to the pathname provided
+as newPath. In the case that newPath already exists, it will
+be overwritten. If there is a directory at newPath, an error will
+be raised instead. No arguments other than a possible exception are
+given to the completion callback.
+
+See also: rename(2).
+
+Remove recursive option.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Using fs.rmdir(path, { recursive: true }) on a path that is a file is no longer permitted and results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+
+Using fs.rmdir(path, { recursive: true }) on a path that does not exist is no longer permitted and results in a ENOENT error.
+
+The recursive option is deprecated, using it triggers a deprecation warning.
+
+The recursive option is deprecated, use fs.rm instead.
+
+The maxBusyTries option is renamed to maxRetries, and its default is 0. The emfileWait option has been removed, and EMFILE errors use the same retry logic as other errors. The retryDelay option is now supported. ENFILE errors are now retried.
+
+The recursive, maxBusyTries, and emfileWait options are now supported.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameters can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Asynchronous rmdir(2). No arguments other than a possible exception are given
+to the completion callback.
+
+Using fs.rmdir() on a file (not a directory) results in an ENOENT error on
+Windows and an ENOTDIR error on POSIX.
+
+To get a behavior similar to the rm -rf Unix command, use fs.rm()
+with options { recursive: true, force: true }.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v14.14.0
+
+Asynchronously removes files and directories (modeled on the standard POSIX rm
+utility). No arguments other than a possible exception are given to the
+completion callback.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Asynchronous stat(2). The callback gets two arguments (err, stats) where
+stats is an <fs.Stats> object.
+
+In case of an error, the err.code will be one of Common System Errors.
+
+fs.stat() follows symbolic links. Use fs.lstat() to look at the
+links themselves.
+
+Using fs.stat() to check for the existence of a file before calling
+fs.open(), fs.readFile(), or fs.writeFile() is not recommended.
+Instead, user code should open/read/write the file directly and handle the
+error raised if the file is not available.
+
+To check if a file exists without manipulating it afterwards, fs.access()
+is recommended.
+
+For example, given the following directory structure:
+
+The next program will check for the stats of the given paths:
+
+The resulting output will resemble:
+
+Asynchronous statfs(2). Returns information about the mounted file system which
+contains path. The callback gets two arguments (err, stats) where stats
+is an <fs.StatFs> object.
+
+In case of an error, the err.code will be one of Common System Errors.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+If the type argument is left undefined, Node will autodetect target type and automatically select dir or file.
+
+The target and path parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+Added in: v0.1.31
+
+Creates the link called path pointing to target. No arguments other than a
+possible exception are given to the completion callback.
+
+See the POSIX symlink(2) documentation for more details.
+
+The type argument is only available on Windows and ignored on other platforms.
+It can be set to 'dir', 'file', or 'junction'. If the type argument is
+null, Node.js will autodetect target type and use 'file' or 'dir'.
+If the target does not exist, 'file' will be used. Windows junction points
+require the destination path to be absolute. When using 'junction', the
+target argument will automatically be normalized to absolute path. Junction
+points on NTFS volumes can only point to directories.
+
+Relative targets are relative to the link's parent directory.
+
+The above example creates a symbolic link mewtwo which points to mew in the
+same directory:
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The error returned may be an AggregateError if more than one error is returned.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.8.6
+
+Truncates the file. No arguments other than a possible exception are
+given to the completion callback. A file descriptor can also be passed as the
+first argument. In this case, fs.ftruncate() is called.
+
+Passing a file descriptor is deprecated and may result in an error being thrown
+in the future.
+
+See the POSIX truncate(2) documentation for more details.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Asynchronously removes a file or symbolic link. No arguments other than a
+possible exception are given to the completion callback.
+
+fs.unlink() will not work on a directory, empty or otherwise. To remove a
+directory, use fs.rmdir().
+
+See the POSIX unlink(2) documentation for more details.
+
+Stop watching for changes on filename. If listener is specified, only that
+particular listener is removed. Otherwise, all listeners are removed,
+effectively stopping watching of filename.
+
+Calling fs.unwatchFile() with a filename that is not being watched is a
+no-op, not an error.
+
+Using fs.watch() is more efficient than fs.watchFile() and
+fs.unwatchFile(). fs.watch() should be used instead of fs.watchFile()
+and fs.unwatchFile() when possible.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+NaN, Infinity, and -Infinity are no longer valid time specifiers.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Numeric strings, NaN, and Infinity are now allowed time specifiers.
+
+Added in: v0.4.2
+
+Change the file system timestamps of the object referenced by path.
+
+The atime and mtime arguments follow these rules:
+
+Added recursive support for Linux, AIX and IBMi.
+
+Added support for closing the watcher with an AbortSignal.
+
+The filename parameter can be a WHATWG URL object using file: protocol.
+
+The passed options object will never be modified.
+
+Added in: v0.5.10
+
+Watch for changes on filename, where filename is either a file or a
+directory.
+
+The second argument is optional. If options is provided as a string, it
+specifies the encoding. Otherwise options should be passed as an object.
+
+The listener callback gets two arguments (eventType, filename). eventType
+is either 'rename' or 'change', and filename is the name of the file
+which triggered the event.
+
+On most platforms, 'rename' is emitted whenever a filename appears or
+disappears in the directory.
+
+The listener callback is attached to the 'change' event fired by
+<fs.FSWatcher>, but it is not the same thing as the 'change' value of
+eventType.
+
+If a signal is passed, aborting the corresponding AbortController will close
+the returned <fs.FSWatcher>.
+
+The fs.watch API is not 100% consistent across platforms, and is
+unavailable in some situations.
+
+On Windows, no events will be emitted if the watched directory is moved or
+renamed. An EPERM error is reported when the watched directory is deleted.
+
+The fs.watch API does not provide any protection with respect
+to malicious actions on the file system. For example, on Windows it is
+implemented by monitoring changes in a directory versus specific files. This
+allows substitution of a file and fs reporting changes on the new file
+with the same filename.
+
+This feature depends on the underlying operating system providing a way
+to be notified of file system changes.
+
+If the underlying functionality is not available for some reason, then
+fs.watch() will not be able to function and may throw an exception.
+For example, watching files or directories can be unreliable, and in some
+cases impossible, on network file systems (NFS, SMB, etc) or host file systems
+when using virtualization software such as Vagrant or Docker.
+
+It is still possible to use fs.watchFile(), which uses stat polling, but
+this method is slower and less reliable.
+
+On Linux and macOS systems, fs.watch() resolves the path to an inode and
+watches the inode. If the watched path is deleted and recreated, it is assigned
+a new inode. The watch will emit an event for the delete but will continue
+watching the original inode. Events for the new inode will not be emitted.
+This is expected behavior.
+
+AIX files retain the same inode for the lifetime of a file. Saving and closing a
+watched file on AIX will result in two notifications (one for adding new
+content, and one for truncation).
+
+Providing filename argument in the callback is only supported on Linux,
+macOS, Windows, and AIX. Even on supported platforms, filename is not always
+guaranteed to be provided. Therefore, don't assume that filename argument is
+always provided in the callback, and have some fallback logic if it is null.
+
+The bigint option is now supported.
+
+The filename parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.31
+
+Watch for changes on filename. The callback listener will be called each
+time the file is accessed.
+
+The options argument may be omitted. If provided, it should be an object. The
+options object may contain a boolean named persistent that indicates
+whether the process should continue to run as long as files are being watched.
+The options object may specify an interval property indicating how often the
+target should be polled in milliseconds.
+
+The listener gets two arguments the current stat object and the previous
+stat object:
+
+These stat objects are instances of fs.Stat. If the bigint option is true,
+the numeric values in these objects are specified as BigInts.
+
+To be notified when the file was modified, not just accessed, it is necessary
+to compare curr.mtimeMs and prev.mtimeMs.
+
+When an fs.watchFile operation results in an ENOENT error, it
+will invoke the listener once, with all the fields zeroed (or, for dates, the
+Unix Epoch). If the file is created later on, the listener will be called
+again, with the latest stat objects. This is a change in functionality since
+v0.10.
+
+Using fs.watch() is more efficient than fs.watchFile and
+fs.unwatchFile. fs.watch should be used instead of fs.watchFile and
+fs.unwatchFile when possible.
+
+When a file being watched by fs.watchFile() disappears and reappears,
+then the contents of previous in the second callback event (the file's
+reappearance) will be the same as the contents of previous in the first
+callback event (its disappearance).
+
+This happens when:
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+The buffer parameter won't coerce unsupported input to strings anymore.
+
+The buffer parameter can now be any TypedArray or a DataView.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The buffer parameter can now be a Uint8Array.
+
+The offset and length parameters are optional now.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.0.2
+
+Write buffer to the file specified by fd.
+
+offset determines the part of the buffer to be written, and length is
+an integer specifying the number of bytes to write.
+
+position refers to the offset from the beginning of the file where this data
+should be written. If typeof position !== 'number', the data will be written
+at the current position. See pwrite(2).
+
+The callback will be given three arguments (err, bytesWritten, buffer) where
+bytesWritten specifies how many bytes were written from buffer.
+
+If this method is invoked as its util.promisify()ed version, it returns
+a promise for an Object with bytesWritten and buffer properties.
+
+It is unsafe to use fs.write() multiple times on the same file without waiting
+for the callback. For this scenario, fs.createWriteStream() is
+recommended.
+
+On Linux, positional writes don't work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+Write buffer to the file specified by fd.
+
+Similar to the above fs.write function, this version takes an
+optional options object. If no options object is specified, it will
+default with the above values.
+
+Passing to the string parameter an object with an own toString function is no longer supported.
+
+Passing to the string parameter an object with an own toString function is deprecated.
+
+The string parameter will stringify an object with an explicit toString function.
+
+The string parameter won't coerce unsupported input to strings anymore.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The position parameter is optional now.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+Added in: v0.11.5
+
+Write string to the file specified by fd. If string is not a string,
+an exception is thrown.
+
+position refers to the offset from the beginning of the file where this data
+should be written. If typeof position !== 'number' the data will be written at
+the current position. See pwrite(2).
+
+encoding is the expected string encoding.
+
+The callback will receive the arguments (err, written, string) where written
+specifies how many bytes the passed string required to be written. Bytes
+written is not necessarily the same as string characters written. See
+Buffer.byteLength.
+
+It is unsafe to use fs.write() multiple times on the same file without waiting
+for the callback. For this scenario, fs.createWriteStream() is
+recommended.
+
+On Linux, positional writes don't work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+On Windows, if the file descriptor is connected to the console (e.g. fd == 1
+or stdout) a string containing non-ASCII characters will not be rendered
+properly by default, regardless of the encoding used.
+It is possible to configure the console to render UTF-8 properly by changing the
+active codepage with the chcp 65001 command. See the chcp docs for more
+details.
+
+The flush option is now supported.
+
+Passing to the string parameter an object with an own toString function is no longer supported.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Passing to the string parameter an object with an own toString function is deprecated.
+
+The error returned may be an AggregateError if more than one error is returned.
+
+The options argument may include an AbortSignal to abort an ongoing writeFile request.
+
+The data parameter will stringify an object with an explicit toString function.
+
+The data parameter won't coerce unsupported input to strings anymore.
+
+The data parameter can now be any TypedArray or a DataView.
+
+The callback parameter is no longer optional. Not passing it will throw a TypeError at runtime.
+
+The data parameter can now be a Uint8Array.
+
+The callback parameter is no longer optional. Not passing it will emit a deprecation warning with id DEP0013.
+
+The file parameter can be a file descriptor now.
+
+Added in: v0.1.29
+
+When file is a filename, asynchronously writes data to the file, replacing the
+file if it already exists. data can be a string or a buffer.
+
+When file is a file descriptor, the behavior is similar to calling
+fs.write() directly (which is recommended). See the notes below on using
+a file descriptor.
+
+The encoding option is ignored if data is a buffer.
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+If options is a string, then it specifies the encoding:
+
+It is unsafe to use fs.writeFile() multiple times on the same file without
+waiting for the callback. For this scenario, fs.createWriteStream() is
+recommended.
+
+Similarly to fs.readFile - fs.writeFile is a convenience method that
+performs multiple write calls internally to write the buffer passed to it.
+For performance sensitive code consider using fs.createWriteStream().
+
+It is possible to use an <AbortSignal> to cancel an fs.writeFile().
+Cancelation is "best effort", and some amount of data is likely still
+to be written.
+
+Aborting an ongoing request does not abort individual operating
+system requests but rather the internal buffering fs.writeFile performs.
+
+When file is a file descriptor, the behavior is almost identical to directly
+calling fs.write() like:
+
+The difference from directly calling fs.write() is that under some unusual
+conditions, fs.write() might write only part of the buffer and need to be
+retried to write the remaining data, whereas fs.writeFile() retries until
+the data is entirely written (or an error occurs).
+
+The implications of this are a common source of confusion. In
+the file descriptor case, the file is not replaced! The data is not necessarily
+written to the beginning of the file, and the file's original data may remain
+before and/or after the newly written data.
+
+For example, if fs.writeFile() is called twice in a row, first to write the
+string 'Hello', then to write the string ', World', the file would contain
+'Hello, World', and might contain some of the file's original data (depending
+on the size of the original file, and the position of the file descriptor). If
+a file name had been used instead of a descriptor, the file would be guaranteed
+to contain only ', World'.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Added in: v12.9.0
+
+Write an array of ArrayBufferViews to the file specified by fd using
+writev().
+
+position is the offset from the beginning of the file where this data
+should be written. If typeof position !== 'number', the data will be written
+at the current position.
+
+The callback will be given three arguments: err, bytesWritten, and
+buffers. bytesWritten is how many bytes were written from buffers.
+
+If this method is util.promisify()ed, it returns a promise for an
+Object with bytesWritten and buffers properties.
+
+It is unsafe to use fs.writev() multiple times on the same file without
+waiting for the callback. For this scenario, use fs.createWriteStream().
+
+On Linux, positional writes don't work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+The synchronous APIs perform all operations synchronously, blocking the
+event loop until the operation completes or fails.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.11.15
+
+Synchronously tests a user's permissions for the file or directory specified
+by path. The mode argument is an optional integer that specifies the
+accessibility checks to be performed. mode should be either the value
+fs.constants.F_OK or a mask consisting of the bitwise OR of any of
+fs.constants.R_OK, fs.constants.W_OK, and fs.constants.X_OK (e.g.
+fs.constants.W_OK | fs.constants.R_OK). Check File access constants for
+possible values of mode.
+
+If any of the accessibility checks fail, an Error will be thrown. Otherwise,
+the method will return undefined.
+
+The flush option is now supported.
+
+The passed options object will never be modified.
+
+The file parameter can be a file descriptor now.
+
+Added in: v0.6.7
+
+Synchronously append data to a file, creating the file if it does not yet
+exist. data can be a string or a <Buffer>.
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+If options is a string, then it specifies the encoding:
+
+The path may be specified as a numeric file descriptor that has been opened
+for appending (using fs.open() or fs.openSync()). The file descriptor will
+not be closed automatically.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.6.7
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.chmod().
+
+See the POSIX chmod(2) documentation for more detail.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.97
+
+Synchronously changes owner and group of a file. Returns undefined.
+This is the synchronous version of fs.chown().
+
+See the POSIX chown(2) documentation for more detail.
+
+Closes the file descriptor. Returns undefined.
+
+Calling fs.closeSync() on any file descriptor (fd) that is currently in use
+through any other fs operation may lead to undefined behavior.
+
+See the POSIX close(2) documentation for more detail.
+
+Changed flags argument to mode and imposed stricter type validation.
+
+Added in: v8.5.0
+
+Synchronously copies src to dest. By default, dest is overwritten if it
+already exists. Returns undefined. Node.js makes no guarantees about the
+atomicity of the copy operation. If an error occurs after the destination file
+has been opened for writing, Node.js will attempt to remove the destination.
+
+mode is an optional integer that specifies the behavior
+of the copy operation. It is possible to create a mask consisting of the bitwise
+OR of two or more values (e.g.
+fs.constants.COPYFILE_EXCL | fs.constants.COPYFILE_FICLONE).
+
+This API is no longer experimental.
+
+Accept an additional mode option to specify the copy behavior as the mode argument of fs.copyFile().
+
+Accepts an additional verbatimSymlinks option to specify whether to perform path resolution for symlinks.
+
+Added in: v16.7.0
+
+Synchronously copies the entire directory structure from src to dest,
+including subdirectories and files.
+
+When copying a directory to another directory, globs are not supported and
+behavior is similar to cp dir1/ dir2/.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Returns true if the path exists, false otherwise.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.exists().
+
+fs.exists() is deprecated, but fs.existsSync() is not. The callback
+parameter to fs.exists() accepts parameters that are inconsistent with other
+Node.js callbacks. fs.existsSync() does not use a callback.
+
+Sets the permissions on the file. Returns undefined.
+
+See the POSIX fchmod(2) documentation for more detail.
+
+Sets the owner of the file. Returns undefined.
+
+See the POSIX fchown(2) documentation for more detail.
+
+Forces all currently queued I/O operations associated with the file to the
+operating system's synchronized I/O completion state. Refer to the POSIX
+fdatasync(2) documentation for details. Returns undefined.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+Added in: v0.1.95
+
+Retrieves the <fs.Stats> for the file descriptor.
+
+See the POSIX fstat(2) documentation for more detail.
+
+Request that all data for the open file descriptor is flushed to the storage
+device. The specific implementation is operating system and device specific.
+Refer to the POSIX fsync(2) documentation for more detail. Returns undefined.
+
+Truncates the file descriptor. Returns undefined.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.ftruncate().
+
+Numeric strings, NaN, and Infinity are now allowed time specifiers.
+
+Added in: v0.4.2
+
+Synchronous version of fs.futimes(). Returns undefined.
+
+Add support for URL instances for cwd option.
+
+Marking the API stable.
+
+Add support for exclude option to accept glob patterns.
+
+Add support for withFileTypes as an option.
+
+Added in: v22.0.0
+
+Changes the permissions on a symbolic link. Returns undefined.
+
+This method is only implemented on macOS.
+
+See the POSIX lchmod(2) documentation for more detail.
+
+This API is no longer deprecated.
+
+Documentation-only deprecation.
+
+Set the owner for the path. Returns undefined.
+
+See the POSIX lchown(2) documentation for more details.
+
+Change the file system timestamps of the symbolic link referenced by path.
+Returns undefined, or throws an exception when parameters are incorrect or
+the operation fails. This is the synchronous version of fs.lutimes().
+
+The existingPath and newPath parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+Added in: v0.1.31
+
+Creates a new link from the existingPath to the newPath. See the POSIX
+link(2) documentation for more detail. Returns undefined.
+
+Accepts a throwIfNoEntry option to specify whether an exception should be thrown if the entry does not exist.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.30
+
+Retrieves the <fs.Stats> for the symbolic link referred to by path.
+
+See the POSIX lstat(2) documentation for more details.
+
+In recursive mode, the first created path is returned now.
+
+The second argument can now be an options object with recursive and mode properties.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Synchronously creates a directory. Returns undefined, or if recursive is
+true, the first directory path created.
+This is the synchronous version of fs.mkdir().
+
+See the POSIX mkdir(2) documentation for more details.
+
+The prefix parameter now accepts buffers and URL.
+
+The prefix parameter now accepts an empty string.
+
+Added in: v5.10.0
+
+Returns the created directory path.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.mkdtemp().
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use.
+
+Returns a disposable object whose path property holds the created directory
+path. When the object is disposed, the directory and its contents will be
+removed if it still exists. If the directory cannot be deleted, disposal will
+throw an error. The object has a remove() method which will perform the same
+task.
+
+For detailed information, see the documentation of fs.mkdtemp().
+
+There is no callback-based version of this API because it is designed for use
+with the using syntax.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use.
+
+Added recursive option.
+
+The bufferSize option was introduced.
+
+Added in: v12.12.0
+
+Synchronously open a directory. See opendir(3).
+
+Creates an <fs.Dir>, which contains all further functions for reading from
+and cleaning up the directory.
+
+The encoding option sets the encoding for the path while opening the
+directory and subsequent read operations.
+
+The flags argument is now optional and defaults to 'r'.
+
+The as and as+ flags are supported now.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Returns an integer representing the file descriptor.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.open().
+
+Added recursive option.
+
+New option withFileTypes was added.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Reads the contents of the directory.
+
+See the POSIX readdir(3) documentation for more details.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the filenames returned. If the encoding is set to 'buffer',
+the filenames returned will be passed as <Buffer> objects.
+
+If options.withFileTypes is set to true, the result will contain
+<fs.Dirent> objects.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+The path parameter can be a file descriptor now.
+
+Added in: v0.1.8
+
+Returns the contents of the path.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.readFile().
+
+If the encoding option is specified then this function returns a
+string. Otherwise it returns a buffer.
+
+Similar to fs.readFile(), when the path is a directory, the behavior of
+fs.readFileSync() is platform-specific.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.31
+
+Returns the symbolic link's string value.
+
+See the POSIX readlink(2) documentation for more details.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the link path returned. If the encoding is set to 'buffer',
+the link path returned will be passed as a <Buffer> object.
+
+The buffer parameter can now be any TypedArray or a DataView.
+
+The length parameter can now be 0.
+
+Added in: v0.1.21
+
+Returns the number of bytesRead.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.read().
+
+Options object can be passed in to make offset, length, and position optional.
+
+Added in: v13.13.0, v12.17.0
+
+Returns the number of bytesRead.
+
+Similar to the above fs.readSync function, this version takes an optional options object.
+If no options object is specified, it will default with the above values.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.read().
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.readv().
+
+Pipe/Socket resolve support was added.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Calling realpathSync now works again for various edge cases on Windows.
+
+The cache parameter was removed.
+
+Added in: v0.1.31
+
+Returns the resolved pathname.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.realpath().
+
+Synchronous realpath(3).
+
+Only paths that can be converted to UTF8 strings are supported.
+
+The optional options argument can be a string specifying an encoding, or an
+object with an encoding property specifying the character encoding to use for
+the path returned. If the encoding is set to 'buffer',
+the path returned will be passed as a <Buffer> object.
+
+On Linux, when Node.js is linked against musl libc, the procfs file system must
+be mounted on /proc in order for this function to work. Glibc does not have
+this restriction.
+
+The oldPath and newPath parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+Added in: v0.1.21
+
+Renames the file from oldPath to newPath. Returns undefined.
+
+See the POSIX rename(2) documentation for more details.
+
+Remove recursive option.
+
+Using fs.rmdirSync(path, { recursive: true }) on a path that is a file is no longer permitted and results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+
+Using fs.rmdirSync(path, { recursive: true }) on a path that does not exist is no longer permitted and results in a ENOENT error.
+
+The recursive option is deprecated, using it triggers a deprecation warning.
+
+The recursive option is deprecated, use fs.rmSync instead.
+
+The maxBusyTries option is renamed to maxRetries, and its default is 0. The emfileWait option has been removed, and EMFILE errors use the same retry logic as other errors. The retryDelay option is now supported. ENFILE errors are now retried.
+
+The recursive, maxBusyTries, and emfileWait options are now supported.
+
+The path parameters can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Synchronous rmdir(2). Returns undefined.
+
+Using fs.rmdirSync() on a file (not a directory) results in an ENOENT error
+on Windows and an ENOTDIR error on POSIX.
+
+To get a behavior similar to the rm -rf Unix command, use fs.rmSync()
+with options { recursive: true, force: true }.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v14.14.0
+
+Synchronously removes files and directories (modeled on the standard POSIX rm
+utility). Returns undefined.
+
+Accepts a throwIfNoEntry option to specify whether an exception should be thrown if the entry does not exist.
+
+Accepts an additional options object to specify whether the numeric values returned should be bigint.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Retrieves the <fs.Stats> for the path.
+
+Synchronous statfs(2). Returns information about the mounted file system which
+contains path.
+
+In case of an error, the err.code will be one of Common System Errors.
+
+If the type argument is left undefined, Node will autodetect target type and automatically select dir or file.
+
+The target and path parameters can be WHATWG URL objects using file: protocol. Support is currently still experimental.
+
+Added in: v0.1.31
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.symlink().
+
+Truncates the file. Returns undefined. A file descriptor can also be
+passed as the first argument. In this case, fs.ftruncateSync() is called.
+
+Passing a file descriptor is deprecated and may result in an error being thrown
+in the future.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Added in: v0.1.21
+
+Synchronous unlink(2). Returns undefined.
+
+NaN, Infinity, and -Infinity are no longer valid time specifiers.
+
+The path parameter can be a WHATWG URL object using file: protocol.
+
+Numeric strings, NaN, and Infinity are now allowed time specifiers.
+
+Added in: v0.4.2
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.utimes().
+
+The flush option is now supported.
+
+Passing to the data parameter an object with an own toString function is no longer supported.
+
+Passing to the data parameter an object with an own toString function is deprecated.
+
+The data parameter will stringify an object with an explicit toString function.
+
+The data parameter won't coerce unsupported input to strings anymore.
+
+The data parameter can now be any TypedArray or a DataView.
+
+The data parameter can now be a Uint8Array.
+
+The file parameter can be a file descriptor now.
+
+Added in: v0.1.29
+
+The mode option only affects the newly created file. See fs.open()
+for more details.
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.writeFile().
+
+The buffer parameter won't coerce unsupported input to strings anymore.
+
+The buffer parameter can now be any TypedArray or a DataView.
+
+The buffer parameter can now be a Uint8Array.
+
+The offset and length parameters are optional now.
+
+Added in: v0.1.21
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.write(fd, buffer...).
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.write(fd, buffer...).
+
+The string parameter won't coerce unsupported input to strings anymore.
+
+The position parameter is optional now.
+
+Added in: v0.11.5
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.write(fd, string...).
+
+For detailed information, see the documentation of the asynchronous version of
+this API: fs.writev().
+
+The common objects are shared by all of the file system API variants
+(promise, callback, and synchronous).
+
+A class representing a directory stream.
+
+Created by fs.opendir(), fs.opendirSync(), or
+fsPromises.opendir().
+
+When using the async iterator, the <fs.Dir> object will be automatically
+closed after the iterator exits.
+
+Asynchronously close the directory's underlying resource handle.
+Subsequent reads will result in errors.
+
+A promise is returned that will be fulfilled after the resource has been
+closed.
+
+Passing an invalid callback to the callback argument now throws ERR_INVALID_ARG_TYPE instead of ERR_INVALID_CALLBACK.
+
+Added in: v12.12.0
+
+Asynchronously close the directory's underlying resource handle.
+Subsequent reads will result in errors.
+
+The callback will be called after the resource handle has been closed.
+
+Synchronously close the directory's underlying resource handle.
+Subsequent reads will result in errors.
+
+The read-only path of this directory as was provided to fs.opendir(),
+fs.opendirSync(), or fsPromises.opendir().
+
+Asynchronously read the next directory entry via readdir(3) as an
+<fs.Dirent>.
+
+A promise is returned that will be fulfilled with an <fs.Dirent>, or null
+if there are no more directory entries to read.
+
+Directory entries returned by this function are in no particular order as
+provided by the operating system's underlying directory mechanisms.
+Entries added or removed while iterating over the directory might not be
+included in the iteration results.
+
+Asynchronously read the next directory entry via readdir(3) as an
+<fs.Dirent>.
+
+After the read is completed, the callback will be called with an
+<fs.Dirent>, or null if there are no more directory entries to read.
+
+Directory entries returned by this function are in no particular order as
+provided by the operating system's underlying directory mechanisms.
+Entries added or removed while iterating over the directory might not be
+included in the iteration results.
+
+Synchronously read the next directory entry as an <fs.Dirent>. See the
+POSIX readdir(3) documentation for more detail.
+
+If there are no more directory entries to read, null will be returned.
+
+Directory entries returned by this function are in no particular order as
+provided by the operating system's underlying directory mechanisms.
+Entries added or removed while iterating over the directory might not be
+included in the iteration results.
+
+Asynchronously iterates over the directory until all entries have
+been read. Refer to the POSIX readdir(3) documentation for more detail.
+
+Entries returned by the async iterator are always an <fs.Dirent>.
+The null case from dir.read() is handled internally.
+
+See <fs.Dir> for an example.
+
+Directory entries returned by this iterator are in no particular order as
+provided by the operating system's underlying directory mechanisms.
+Entries added or removed while iterating over the directory might not be
+included in the iteration results.
+
+No longer experimental.
+
+Added in: v24.1.0, v22.1.0
+
+Calls dir.close() if the directory handle is open, and returns a promise that
+fulfills when disposal is complete.
+
+No longer experimental.
+
+Added in: v24.1.0, v22.1.0
+
+Calls dir.closeSync() if the directory handle is open, and returns
+undefined.
+
+A representation of a directory entry, which can be a file or a subdirectory
+within the directory, as returned by reading from an <fs.Dir>. The
+directory entry is a combination of the file name and file type pairs.
+
+Additionally, when fs.readdir() or fs.readdirSync() is called with
+the withFileTypes option set to true, the resulting array is filled with
+<fs.Dirent> objects, rather than strings or <Buffer>s.
+
+Returns true if the <fs.Dirent> object describes a block device.
+
+Returns true if the <fs.Dirent> object describes a character device.
+
+Returns true if the <fs.Dirent> object describes a file system
+directory.
+
+Returns true if the <fs.Dirent> object describes a first-in-first-out
+(FIFO) pipe.
+
+Returns true if the <fs.Dirent> object describes a regular file.
+
+Returns true if the <fs.Dirent> object describes a socket.
+
+Returns true if the <fs.Dirent> object describes a symbolic link.
+
+The file name that this <fs.Dirent> object refers to. The type of this
+value is determined by the options.encoding passed to fs.readdir() or
+fs.readdirSync().
+
+Marking the API stable.
+
+Added in: v21.4.0, v20.12.0, v18.20.0
+
+The path to the parent directory of the file this <fs.Dirent> object refers to.
+
+A successful call to fs.watch() method will return a new <fs.FSWatcher>
+object.
+
+All <fs.FSWatcher> objects emit a 'change' event whenever a specific watched
+file is modified.
+
+Emitted when something changes in a watched directory or file.
+See more details in fs.watch().
+
+The filename argument may not be provided depending on operating system
+support. If filename is provided, it will be provided as a <Buffer> if
+fs.watch() is called with its encoding option set to 'buffer', otherwise
+filename will be a UTF-8 string.
+
+Emitted when the watcher stops watching for changes. The closed
+<fs.FSWatcher> object is no longer usable in the event handler.
+
+Emitted when an error occurs while watching the file. The errored
+<fs.FSWatcher> object is no longer usable in the event handler.
+
+Stop watching for changes on the given <fs.FSWatcher>. Once stopped, the
+<fs.FSWatcher> object is no longer usable.
+
+When called, requests that the Node.js event loop not exit so long as the
+<fs.FSWatcher> is active. Calling watcher.ref() multiple times will have
+no effect.
+
+By default, all <fs.FSWatcher> objects are "ref'ed", making it normally
+unnecessary to call watcher.ref() unless watcher.unref() had been
+called previously.
+
+When called, the active <fs.FSWatcher> object will not require the Node.js
+event loop to remain active. If there is no other activity keeping the
+event loop running, the process may exit before the <fs.FSWatcher> object's
+callback is invoked. Calling watcher.unref() multiple times will have
+no effect.
+
+A successful call to fs.watchFile() method will return a new <fs.StatWatcher>
+object.
+
+When called, requests that the Node.js event loop not exit so long as the
+<fs.StatWatcher> is active. Calling watcher.ref() multiple times will have
+no effect.
+
+By default, all <fs.StatWatcher> objects are "ref'ed", making it normally
+unnecessary to call watcher.ref() unless watcher.unref() had been
+called previously.
+
+When called, the active <fs.StatWatcher> object will not require the Node.js
+event loop to remain active. If there is no other activity keeping the
+event loop running, the process may exit before the <fs.StatWatcher> object's
+callback is invoked. Calling watcher.unref() multiple times will have
+no effect.
+
+Instances of <fs.ReadStream> are created and returned using the
+fs.createReadStream() function.
+
+Emitted when the <fs.ReadStream>'s underlying file descriptor has been closed.
+
+Emitted when the <fs.ReadStream>'s file descriptor has been opened.
+
+Emitted when the <fs.ReadStream> is ready to be used.
+
+Fires immediately after 'open'.
+
+The number of bytes that have been read so far.
+
+The path to the file the stream is reading from as specified in the first
+argument to fs.createReadStream(). If path is passed as a string, then
+readStream.path will be a string. If path is passed as a <Buffer>, then
+readStream.path will be a <Buffer>. If fd is specified, then
+readStream.path will be undefined.
+
+This property is true if the underlying file has not been opened yet,
+i.e. before the 'ready' event is emitted.
+
+Public constructor is deprecated.
+
+Added times as numbers.
+
+Added in: v0.1.21
+
+A <fs.Stats> object provides information about a file.
+
+Objects returned from fs.stat(), fs.lstat(), fs.fstat(), and
+their synchronous counterparts are of this type.
+If bigint in the options passed to those methods is true, the numeric values
+will be bigint instead of number, and the object will contain additional
+nanosecond-precision properties suffixed with Ns.
+Stat objects are not to be created directly using the new keyword.
+
+bigint version:
+
+Returns true if the <fs.Stats> object describes a block device.
+
+Returns true if the <fs.Stats> object describes a character device.
+
+Returns true if the <fs.Stats> object describes a file system directory.
+
+If the <fs.Stats> object was obtained from calling fs.lstat() on a
+symbolic link which resolves to a directory, this method will return false.
+This is because fs.lstat() returns information
+about a symbolic link itself and not the path it resolves to.
+
+Returns true if the <fs.Stats> object describes a first-in-first-out (FIFO)
+pipe.
+
+Returns true if the <fs.Stats> object describes a regular file.
+
+Returns true if the <fs.Stats> object describes a socket.
+
+Returns true if the <fs.Stats> object describes a symbolic link.
+
+This method is only valid when using fs.lstat().
+
+The numeric identifier of the device containing the file.
+
+The file system specific "Inode" number for the file.
+
+A bit-field describing the file type and mode.
+
+The number of hard-links that exist for the file.
+
+The numeric user identifier of the user that owns the file (POSIX).
+
+The numeric group identifier of the group that owns the file (POSIX).
+
+A numeric device identifier if the file represents a device.
+
+The size of the file in bytes.
+
+If the underlying file system does not support getting the size of the file,
+this will be 0.
+
+The file system block size for i/o operations.
+
+The number of blocks allocated for this file.
+
+The timestamp indicating the last time this file was accessed expressed in
+milliseconds since the POSIX Epoch.
+
+The timestamp indicating the last time this file was modified expressed in
+milliseconds since the POSIX Epoch.
+
+The timestamp indicating the last time the file status was changed expressed
+in milliseconds since the POSIX Epoch.
+
+The timestamp indicating the creation time of this file expressed in
+milliseconds since the POSIX Epoch.
+
+Only present when bigint: true is passed into the method that generates
+the object.
+The timestamp indicating the last time this file was accessed expressed in
+nanoseconds since the POSIX Epoch.
+
+Only present when bigint: true is passed into the method that generates
+the object.
+The timestamp indicating the last time this file was modified expressed in
+nanoseconds since the POSIX Epoch.
+
+Only present when bigint: true is passed into the method that generates
+the object.
+The timestamp indicating the last time the file status was changed expressed
+in nanoseconds since the POSIX Epoch.
+
+Only present when bigint: true is passed into the method that generates
+the object.
+The timestamp indicating the creation time of this file expressed in
+nanoseconds since the POSIX Epoch.
+
+The timestamp indicating the last time this file was accessed.
+
+The timestamp indicating the last time this file was modified.
+
+The timestamp indicating the last time the file status was changed.
+
+The timestamp indicating the creation time of this file.
+
+The atimeMs, mtimeMs, ctimeMs, birthtimeMs properties are
+numeric values that hold the corresponding times in milliseconds. Their
+precision is platform specific. When bigint: true is passed into the
+method that generates the object, the properties will be bigints,
+otherwise they will be numbers.
+
+The atimeNs, mtimeNs, ctimeNs, birthtimeNs properties are
+bigints that hold the corresponding times in nanoseconds. They are
+only present when bigint: true is passed into the method that generates
+the object. Their precision is platform specific.
+
+atime, mtime, ctime, and birthtime are
+Date object alternate representations of the various times. The
+Date and number values are not connected. Assigning a new number value, or
+mutating the Date value, will not be reflected in the corresponding alternate
+representation.
+
+The times in the stat object have the following semantics:
+
+Prior to Node.js 0.12, the ctime held the birthtime on Windows systems. As
+of 0.12, ctime is not "creation time", and on Unix systems, it never was.
+
+Provides information about a mounted file system.
+
+Objects returned from fs.statfs() and its synchronous counterpart are of
+this type. If bigint in the options passed to those methods is true, the
+numeric values will be bigint instead of number.
+
+bigint version:
+
+Free blocks available to unprivileged users.
+
+Free blocks in file system.
+
+Total data blocks in file system.
+
+Optimal transfer block size.
+
+Free file nodes in file system.
+
+Total file nodes in file system.
+
+Type of file system.
+
+An optimized UTF-8 stream writer that allows for flushing all the internal
+buffering on demand. It handles EAGAIN errors correctly, allowing for
+customization, for example, by dropping content if the disk is busy.
+
+The 'close' event is emitted when the stream is fully closed.
+
+The 'drain' event is emitted when the internal buffer has drained sufficiently
+to allow continued writing.
+
+The 'drop' event is emitted when the maximal length is reached and that data
+will not be written. The data that was dropped is passed as the first argument
+to the event handler.
+
+The 'error' event is emitted when an error occurs.
+
+The 'finish' event is emitted when the stream has been ended and all data has
+been flushed to the underlying file.
+
+The 'ready' event is emitted when the stream is ready to accept writes.
+
+The 'write' event is emitted when a write operation has completed. The number
+of bytes written is passed as the first argument to the event handler.
+
+Close the stream immediately, without flushing the internal buffer.
+
+Close the stream gracefully, flushing the internal buffer before closing.
+
+Writes the current buffer to the file if a write was not in progress. Do
+nothing if minLength is zero or if it is already writing.
+
+Flushes the buffered data synchronously. This is a costly operation.
+
+Reopen the file in place, useful for log rotation.
+
+When the options.contentMode is set to 'utf8' when the stream is created,
+the data argument must be a string. If the contentMode is set to 'buffer',
+the data argument must be a <Buffer>.
+
+Calls utf8Stream.destroy().
+
+Instances of <fs.WriteStream> are created and returned using the
+fs.createWriteStream() function.
+
+Emitted when the <fs.WriteStream>'s underlying file descriptor has been closed.
+
+Emitted when the <fs.WriteStream>'s file is opened.
+
+Emitted when the <fs.WriteStream> is ready to be used.
+
+Fires immediately after 'open'.
+
+The number of bytes written so far. Does not include data that is still queued
+for writing.
+
+Closes writeStream. Optionally accepts a
+callback that will be executed once the writeStream
+is closed.
+
+The path to the file the stream is writing to as specified in the first
+argument to fs.createWriteStream(). If path is passed as a string, then
+writeStream.path will be a string. If path is passed as a <Buffer>, then
+writeStream.path will be a <Buffer>.
+
+This property is true if the underlying file has not been opened yet,
+i.e. before the 'ready' event is emitted.
+
+Returns an object containing commonly used constants for file system
+operations.
+
+The following constants are exported by fs.constants and fsPromises.constants.
+
+Not every constant will be available on every operating system;
+this is especially important for Windows, where many of the POSIX specific
+definitions are not available.
+For portable applications it is recommended to check for their presence
+before use.
+
+To use more than one constant, use the bitwise OR | operator.
+
+Example:
+
+The following constants are meant for use as the mode parameter passed to
+fsPromises.access(), fs.access(), and fs.accessSync().
+
+The definitions are also available on Windows.
+
+The following constants are meant for use with fs.copyFile().
+
+The definitions are also available on Windows.
+
+The following constants are meant for use with fs.open().
+
+On Windows, only O_APPEND, O_CREAT, O_EXCL, O_RDONLY, O_RDWR,
+O_TRUNC, O_WRONLY, and UV_FS_O_FILEMAP are available.
+
+The following constants are meant for use with the <fs.Stats> object's
+mode property for determining a file's type.
+
+On Windows, only S_IFCHR, S_IFDIR, S_IFLNK, S_IFMT, and S_IFREG,
+are available.
+
+The following constants are meant for use with the <fs.Stats> object's
+mode property for determining the access permissions for a file.
+
+On Windows, only S_IRUSR and S_IWUSR are available.
+
+Because they are executed asynchronously by the underlying thread pool,
+there is no guaranteed ordering when using either the callback or
+promise-based methods.
+
+For example, the following is prone to error because the fs.stat()
+operation might complete before the fs.rename() operation:
+
+It is important to correctly order the operations by awaiting the results
+of one before invoking the other:
+
+Or, when using the callback APIs, move the fs.stat() call into the callback
+of the fs.rename() operation:
+
+Most fs operations accept file paths that may be specified in the form of
+a string, a <Buffer>, or a <URL> object using the file: protocol.
+
+String paths are interpreted as UTF-8 character sequences identifying
+the absolute or relative filename. Relative paths will be resolved relative
+to the current working directory as determined by calling process.cwd().
+
+Example using an absolute path on POSIX:
+
+Example using a relative path on POSIX (relative to process.cwd()):
+
+For most node:fs module functions, the path or filename argument may be
+passed as a <URL> object using the file: protocol.
+
+file: URLs are always absolute paths.
+
+On Windows, file: <URL>s with a host name convert to UNC paths, while file:
+<URL>s with drive letters convert to local absolute paths. file: <URL>s
+with no host name and no drive letter will result in an error:
+
+file: <URL>s with drive letters must use : as a separator just after
+the drive letter. Using another separator will result in an error.
+
+On all other platforms, file: <URL>s with a host name are unsupported and
+will result in an error:
+
+A file: <URL> having encoded slash characters will result in an error on all
+platforms:
+
+On Windows, file: <URL>s having encoded backslash will result in an error:
+
+Paths specified using a <Buffer> are useful primarily on certain POSIX
+operating systems that treat file paths as opaque byte sequences. On such
+systems, it is possible for a single file path to contain sub-sequences that
+use multiple character encodings. As with string paths, <Buffer> paths may
+be relative or absolute:
+
+Example using an absolute path on POSIX:
+
+On Windows, Node.js follows the concept of per-drive working directory. This
+behavior can be observed when using a drive path without a backslash. For
+example fs.readdirSync('C:\\') can potentially return a different result than
+fs.readdirSync('C:'). For more information, see
+this MSDN page.
+
+On POSIX systems, for every process, the kernel maintains a table of currently
+open files and resources. Each open file is assigned a simple numeric
+identifier called a file descriptor. At the system-level, all file system
+operations use these file descriptors to identify and track each specific
+file. Windows systems use a different but conceptually similar mechanism for
+tracking resources. To simplify things for users, Node.js abstracts away the
+differences between operating systems and assigns all open files a numeric file
+descriptor.
+
+The callback-based fs.open(), and synchronous fs.openSync() methods open a
+file and allocate a new file descriptor. Once allocated, the file descriptor may
+be used to read data from, write data to, or request information about the file.
+
+Operating systems limit the number of file descriptors that may be open
+at any given time so it is critical to close the descriptor when operations
+are completed. Failure to do so will result in a memory leak that will
+eventually cause an application to crash.
+
+The promise-based APIs use a <FileHandle> object in place of the numeric
+file descriptor. These objects are better managed by the system to ensure
+that resources are not leaked. However, it is still required that they are
+closed when operations are completed:
+
+All callback and promise-based file system APIs (with the exception of
+fs.FSWatcher()) use libuv's threadpool. This can have surprising and negative
+performance implications for some applications. See the
+UV_THREADPOOL_SIZE documentation for more information.
+
+The following flags are available wherever the flag option takes a
+string.
+
+'a': Open file for appending.
+The file is created if it does not exist.
+
+'ax': Like 'a' but fails if the path exists.
+
+'a+': Open file for reading and appending.
+The file is created if it does not exist.
+
+'ax+': Like 'a+' but fails if the path exists.
+
+'as': Open file for appending in synchronous mode.
+The file is created if it does not exist.
+
+'as+': Open file for reading and appending in synchronous mode.
+The file is created if it does not exist.
+
+'r': Open file for reading.
+An exception occurs if the file does not exist.
+
+'rs': Open file for reading in synchronous mode.
+An exception occurs if the file does not exist.
+
+'r+': Open file for reading and writing.
+An exception occurs if the file does not exist.
+
+'rs+': Open file for reading and writing in synchronous mode. Instructs
+the operating system to bypass the local file system cache.
+
+This is primarily useful for opening files on NFS mounts as it allows
+skipping the potentially stale local cache. It has a very real impact on
+I/O performance so using this flag is not recommended unless it is needed.
+
+This doesn't turn fs.open() or fsPromises.open() into a synchronous
+blocking call. If synchronous operation is desired, something like
+fs.openSync() should be used.
+
+'w': Open file for writing.
+The file is created (if it does not exist) or truncated (if it exists).
+
+'wx': Like 'w' but fails if the path exists.
+
+'w+': Open file for reading and writing.
+The file is created (if it does not exist) or truncated (if it exists).
+
+'wx+': Like 'w+' but fails if the path exists.
+
+flag can also be a number as documented by open(2); commonly used constants
+are available from fs.constants. On Windows, flags are translated to
+their equivalent ones where applicable, e.g. O_WRONLY to FILE_GENERIC_WRITE,
+or O_EXCL|O_CREAT to CREATE_NEW, as accepted by CreateFileW.
+
+The exclusive flag 'x' (O_EXCL flag in open(2)) causes the operation to
+return an error if the path already exists. On POSIX, if the path is a symbolic
+link, using O_EXCL returns an error even if the link is to a path that does
+not exist. The exclusive flag might not work with network file systems.
+
+On Linux, positional writes don't work when the file is opened in append mode.
+The kernel ignores the position argument and always appends the data to
+the end of the file.
+
+Modifying a file rather than replacing it may require the flag option to be
+set to 'r+' rather than the default 'w'.
+
+The behavior of some flags are platform-specific. As such, opening a directory
+on macOS and Linux with the 'a+' flag, as in the example below, will return an
+error. In contrast, on Windows and FreeBSD, a file descriptor or a FileHandle
+will be returned.
+
+On Windows, opening an existing hidden file using the 'w' flag (either
+through fs.open(), fs.writeFile(), or fsPromises.open()) will fail with
+EPERM. Existing hidden files can be opened for writing with the 'r+' flag.
+
+A call to fs.ftruncate() or filehandle.truncate() can be used to reset
+the file contents.
