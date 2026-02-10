@@ -1,0 +1,64 @@
+Title: Type Conversions
+Source: https://javascript.info/type-conversions
+
+Most of the time, operators and functions automatically convert the values given to them to the right type.
+
+For example, alert automatically converts any value to a string to show it. Mathematical operations convert values to numbers.
+
+There are also cases when we need to explicitly convert a value to the expected type.
+
+In this chapter, we won’t cover objects. For now, we’ll just be talking about primitives.
+
+Later, after we learn about objects, in the chapter Object to primitive conversion we’ll see how objects fit in.
+
+String conversion happens when we need the string form of a value.
+
+For example, alert(value) does it to show the value.
+
+We can also call the String(value) function to convert a value to a string:
+
+String conversion is mostly obvious. A false becomes "false", null becomes "null", etc.
+
+Numeric conversion in mathematical functions and expressions happens automatically.
+
+For example, when division / is applied to non-numbers:
+
+We can use the Number(value) function to explicitly convert a value to a number:
+
+Explicit conversion is usually required when we read a value from a string-based source like a text form but expect a number to be entered.
+
+If the string is not a valid number, the result of such a conversion is NaN. For instance:
+
+Numeric conversion rules:
+
+Examples:
+
+Please note that null and undefined behave differently here: null becomes zero while undefined becomes NaN.
+
+Most mathematical operators also perform such conversion, we’ll see that in the next chapter.
+
+Boolean conversion is the simplest one.
+
+It happens in logical operations (later we’ll meet condition tests and other similar things) but can also be performed explicitly with a call to Boolean(value).
+
+The conversion rule:
+
+For instance:
+
+Some languages (namely PHP) treat "0" as false. But in JavaScript, a non-empty string is always true.
+
+The three most widely used type conversions are to string, to number, and to boolean.
+
+String Conversion – Occurs when we output something. Can be performed with String(value). The conversion to string is usually obvious for primitive values.
+
+Numeric Conversion – Occurs in math operations. Can be performed with Number(value).
+
+The conversion follows the rules:
+
+Boolean Conversion – Occurs in logical operations. Can be performed with Boolean(value).
+
+Follows the rules:
+
+Most of these rules are easy to understand and memorize. The notable exceptions where people usually make mistakes are:
+
+Objects aren’t covered here. We’ll return to them later in the chapter Object to primitive conversion that is devoted exclusively to objects after we learn more basic things about JavaScript.

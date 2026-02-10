@@ -1,0 +1,72 @@
+Title: Constructor, operator "new"
+Source: https://javascript.info/constructor-new
+
+The regular {...} syntax allows us to create one object. But often we need to create many similar objects, like multiple users or menu items and so on.
+
+That can be done using constructor functions and the "new" operator.
+
+Constructor functions technically are regular functions. There are two conventions though:
+
+For instance:
+
+When a function is executed with new, it does the following steps:
+
+In other words, new User(...) does something like:
+
+So let user = new User("Jack") gives the same result as:
+
+Now if we want to create other users, we can call new User("Ann"), new User("Alice") and so on. Much shorter than using literals every time, and also easy to read.
+
+That’s the main purpose of constructors – to implement reusable object creation code.
+
+Let’s note once again – technically, any function (except arrow functions, as they don’t have this) can be used as a constructor. It can be run with new, and it will execute the algorithm above. The “capital letter first” is a common agreement, to make it clear that a function is to be run with new.
+
+If we have many lines of code all about creation of a single complex object, we can wrap them in an immediately called constructor function, like this:
+
+This constructor can’t be called again, because it is not saved anywhere, just created and called. So this trick aims to encapsulate the code that constructs the single object, without future reuse.
+
+The syntax from this section is rarely used, skip it unless you want to know everything.
+
+Inside a function, we can check whether it was called with new or without it, using a special new.target property.
+
+It is undefined for regular calls and equals the function if called with new:
+
+That can be used inside the function to know whether it was called with new, “in constructor mode”, or without it, “in regular mode”.
+
+We can also make both new and regular calls to do the same, like this:
+
+This approach is sometimes used in libraries to make the syntax more flexible. So that people may call the function with or without new, and it still works.
+
+Probably not a good thing to use everywhere though, because omitting new makes it a bit less obvious what’s going on. With new we all know that the new object is being created.
+
+Usually, constructors do not have a return statement. Their task is to write all necessary stuff into this, and it automatically becomes the result.
+
+But if there is a return statement, then the rule is simple:
+
+In other words, return with an object returns that object, in all other cases this is returned.
+
+For instance, here return overrides this by returning an object:
+
+And here’s an example with an empty return (or we could place a primitive after it, doesn’t matter):
+
+Usually constructors don’t have a return statement. Here we mention the special behavior with returning objects mainly for the sake of completeness.
+
+By the way, we can omit parentheses after new:
+
+Omitting parentheses here is not considered a “good style”, but the syntax is permitted by specification.
+
+Using constructor functions to create objects gives a great deal of flexibility. The constructor function may have parameters that define how to construct the object, and what to put in it.
+
+Of course, we can add to this not only properties, but methods as well.
+
+For instance, new User(name) below creates an object with the given name and the method sayHi:
+
+To create complex objects, there’s a more advanced syntax, classes, that we’ll cover later.
+
+We can use constructor functions to make multiple similar objects.
+
+JavaScript provides constructor functions for many built-in language objects: like Date for dates, Set for sets and others that we plan to study.
+
+In this chapter we only cover the basics about objects and constructors. They are essential for learning more about data types and functions in the next chapters.
+
+After we learn that, we return to objects and cover them in-depth in the chapters Prototypes, inheritance and Classes.

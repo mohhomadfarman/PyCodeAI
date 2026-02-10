@@ -1,0 +1,112 @@
+Title: Object to primitive conversion
+Source: https://javascript.info/object-toprimitive
+
+What happens when objects are added obj1 + obj2, subtracted obj1 - obj2 or printed using alert(obj)?
+
+JavaScript doesn’t allow you to customize how operators work on objects. Unlike some other programming languages, such as Ruby or C++, we can’t implement a special object method to handle addition (or other operators).
+
+In case of such operations, objects are auto-converted to primitives, and then the operation is carried out over these primitives and results in a primitive value.
+
+That’s an important limitation: the result of obj1 + obj2 (or another math operation) can’t be another object!
+
+E.g. we can’t make objects representing vectors or matrices (or achievements or whatever), add them and expect a “summed” object as the result. Such architectural feats are automatically “off the board”.
+
+So, because we can’t technically do much here, there’s no maths with objects in real projects. When it happens, with rare exceptions, it’s because of a coding mistake.
+
+In this chapter we’ll cover how an object converts to primitive and how to customize it.
+
+We have two purposes:
+
+In the chapter Type Conversions we’ve seen the rules for numeric, string and boolean conversions of primitives. But we left a gap for objects. Now, as we know about methods and symbols it becomes possible to fill it.
+
+We can implement string and numeric conversion by ourselves, using special object methods.
+
+Now let’s get into technical details, because it’s the only way to cover the topic in-depth.
+
+How does JavaScript decide which conversion to apply?
+
+There are three variants of type conversion, that happen in various situations. They’re called “hints”, as described in the specification:
+
+For an object-to-string conversion, when we’re doing an operation on an object that expects a string, like alert:
+
+For an object-to-number conversion, like when we’re doing maths:
+
+Most built-in mathematical functions also include such conversion.
+
+Occurs in rare cases when the operator is “not sure” what type to expect.
+
+For instance, binary plus + can work both with strings (concatenates them) and numbers (adds them). So if a binary plus gets an object as an argument, it uses the "default" hint to convert it.
+
+Also, if an object is compared using == with a string, number or a symbol, it’s also unclear which conversion should be done, so the "default" hint is used.
+
+The greater and less comparison operators, such as < >, can work with both strings and numbers too. Still, they use the "number" hint, not "default". That’s for historical reasons.
+
+In practice though, things are a bit simpler.
+
+All built-in objects except for one case (Date object, we’ll learn it later) implement "default" conversion the same way as "number". And we probably should do the same.
+
+Still, it’s important to know about all 3 hints, soon we’ll see why.
+
+To do the conversion, JavaScript tries to find and call three object methods:
+
+Let’s start from the first method. There’s a built-in symbol named Symbol.toPrimitive that should be used to name the conversion method, like this:
+
+If the method Symbol.toPrimitive exists, it’s used for all hints, and no more methods are needed.
+
+For instance, here user object implements it:
+
+As we can see from the code, user becomes a self-descriptive string or a money amount, depending on the conversion. The single method user[Symbol.toPrimitive] handles all conversion cases.
+
+If there’s no Symbol.toPrimitive then JavaScript tries to find methods toString and valueOf:
+
+Methods toString and valueOf come from ancient times. They are not symbols (symbols did not exist that long ago), but rather “regular” string-named methods. They provide an alternative “old-style” way to implement the conversion.
+
+These methods must return a primitive value. If toString or valueOf returns an object, then it’s ignored (same as if there were no method).
+
+By default, a plain object has following toString and valueOf methods:
+
+Here’s the demo:
+
+So if we try to use an object as a string, like in an alert or so, then by default we see [object Object].
+
+The default valueOf is mentioned here only for the sake of completeness, to avoid any confusion. As you can see, it returns the object itself, and so is ignored. Don’t ask me why, that’s for historical reasons. So we can assume it doesn’t exist.
+
+Let’s implement these methods to customize the conversion.
+
+For instance, here user does the same as above using a combination of toString and valueOf instead of Symbol.toPrimitive:
+
+As we can see, the behavior is the same as the previous example with Symbol.toPrimitive.
+
+Often we want a single “catch-all” place to handle all primitive conversions. In this case, we can implement toString only, like this:
+
+In the absence of Symbol.toPrimitive and valueOf, toString will handle all primitive conversions.
+
+The important thing to know about all primitive-conversion methods is that they do not necessarily return the “hinted” primitive.
+
+There is no control whether toString returns exactly a string, or whether Symbol.toPrimitive method returns a number for the hint "number".
+
+The only mandatory thing: these methods must return a primitive, not an object.
+
+For historical reasons, if toString or valueOf returns an object, there’s no error, but such value is ignored (like if the method didn’t exist). That’s because in ancient times there was no good “error” concept in JavaScript.
+
+In contrast, Symbol.toPrimitive is stricter, it must return a primitive, otherwise there will be an error.
+
+As we know already, many operators and functions perform type conversions, e.g. multiplication * converts operands to numbers.
+
+If we pass an object as an argument, then there are two stages of calculations:
+
+For instance:
+
+Binary plus will concatenate strings in the same situation, as it gladly accepts a string:
+
+The object-to-primitive conversion is called automatically by many built-in functions and operators that expect a primitive as a value.
+
+There are 3 types (hints) of it:
+
+The specification describes explicitly which operator uses which hint.
+
+The conversion algorithm is:
+
+All these methods must return a primitive to work (if defined).
+
+In practice, it’s often enough to implement only obj.toString() as a “catch-all” method for string conversions that should return a “human-readable” representation of an object, for logging or debugging purposes.

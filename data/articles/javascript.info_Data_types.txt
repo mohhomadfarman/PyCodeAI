@@ -1,0 +1,4 @@
+Title: Data types
+Source: https://javascript.info/data-types
+
+More data structures and more in-depth study of the types.

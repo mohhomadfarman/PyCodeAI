@@ -1,0 +1,46 @@
+Title: Eval: run a code string
+Source: https://javascript.info/eval
+
+The built-in eval function allows to execute a string of code.
+
+The syntax is:
+
+For example:
+
+A string of code may be long, contain line breaks, function declarations, variables and so on.
+
+The result of eval is the result of the last statement.
+
+For example:
+
+The eval’ed code is executed in the current lexical environment, so it can see outer variables:
+
+It can change outer variables as well:
+
+In strict mode, eval has its own lexical environment. So functions and variables, declared inside eval, are not visible outside:
+
+Without use strict, eval doesn’t have its own lexical environment, so we would see x and f outside.
+
+In modern programming eval is used very sparingly. It’s often said that “eval is evil”.
+
+The reason is simple: long, long time ago JavaScript was a much weaker language, many things could only be done with eval. But that time passed a decade ago.
+
+Right now, there’s almost no reason to use eval. If someone is using it, there’s a good chance they can replace it with a modern language construct or a JavaScript Module.
+
+Please note that its ability to access outer variables has side-effects.
+
+Code minifiers (tools used before JS gets to production, to compress it) rename local variables into shorter ones (like a, b etc) to make the code smaller. That’s usually safe, but not if eval is used, as local variables may be accessed from eval’ed code string. So minifiers don’t do that renaming for all variables potentially visible from eval. That negatively affects code compression ratio.
+
+Using outer local variables inside eval is also considered a bad programming practice, as it makes maintaining the code more difficult.
+
+There are two ways how to be totally safe from such problems.
+
+If eval’ed code doesn’t use outer variables, please call eval as window.eval(...):
+
+This way the code is executed in the global scope:
+
+If eval’ed code needs local variables, change eval to new Function and pass them as arguments:
+
+The new Function construct is explained in the chapter The "new Function" syntax. It creates a function from a string, also in the global scope. So it can’t see local variables. But it’s so much clearer to pass them explicitly as arguments, like in the example above.
+
+A call to eval(code) runs the string of code and returns the result of the last statement.

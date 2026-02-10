@@ -1,0 +1,62 @@
+Title: Error handling with promises
+Source: https://javascript.info/promise-error-handling
+
+Promise chains are great at error handling. When a promise rejects, the control jumps to the closest rejection handler. That’s very convenient in practice.
+
+For instance, in the code below the URL to fetch is wrong (no such site) and .catch handles the error:
+
+As you can see, the .catch doesn’t have to be immediate. It may appear after one or maybe several .then.
+
+Or, maybe, everything is all right with the site, but the response is not valid JSON. The easiest way to catch all errors is to append .catch to the end of chain:
+
+Normally, such .catch doesn’t trigger at all. But if any of the promises above rejects (a network problem or invalid json or whatever), then it would catch it.
+
+The code of a promise executor and promise handlers has an “invisible try..catch” around it. If an exception happens, it gets caught and treated as a rejection.
+
+For instance, this code:
+
+…Works exactly the same as this:
+
+The “invisible try..catch” around the executor automatically catches the error and turns it into rejected promise.
+
+This happens not only in the executor function, but in its handlers as well. If we throw inside a .then handler, that means a rejected promise, so the control jumps to the nearest error handler.
+
+Here’s an example:
+
+This happens for all errors, not just those caused by the throw statement. For example, a programming error:
+
+The final .catch not only catches explicit rejections, but also accidental errors in the handlers above.
+
+As we already noticed, .catch at the end of the chain is similar to try..catch. We may have as many .then handlers as we want, and then use a single .catch at the end to handle errors in all of them.
+
+In a regular try..catch we can analyze the error and maybe rethrow it if it can’t be handled. The same thing is possible for promises.
+
+If we throw inside .catch, then the control goes to the next closest error handler. And if we handle the error and finish normally, then it continues to the next closest successful .then handler.
+
+In the example below the .catch successfully handles the error:
+
+Here the .catch block finishes normally. So the next successful .then handler is called.
+
+In the example below we see the other situation with .catch. The handler (*) catches the error and just can’t handle it (e.g. it only knows how to handle URIError), so it throws it again:
+
+The execution jumps from the first .catch (*) to the next one (**) down the chain.
+
+What happens when an error is not handled? For instance, we forgot to append .catch to the end of the chain, like here:
+
+In case of an error, the promise becomes rejected, and the execution should jump to the closest rejection handler. But there is none. So the error gets “stuck”. There’s no code to handle it.
+
+In practice, just like with regular unhandled errors in code, it means that something has gone terribly wrong.
+
+What happens when a regular error occurs and is not caught by try..catch? The script dies with a message in the console. A similar thing happens with unhandled promise rejections.
+
+The JavaScript engine tracks such rejections and generates a global error in that case. You can see it in the console if you run the example above.
+
+In the browser we can catch such errors using the event unhandledrejection:
+
+The event is the part of the HTML standard.
+
+If an error occurs, and there’s no .catch, the unhandledrejection handler triggers, and gets the event object with the information about the error, so we can do something.
+
+Usually such errors are unrecoverable, so our best way out is to inform the user about the problem and probably report the incident to the server.
+
+In non-browser environments like Node.js there are other ways to track unhandled errors.

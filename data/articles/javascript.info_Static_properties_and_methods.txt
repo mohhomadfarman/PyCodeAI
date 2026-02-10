@@ -1,0 +1,68 @@
+Title: Static properties and methods
+Source: https://javascript.info/static-properties-methods
+
+We can also assign a method to the class as a whole. Such methods are called static.
+
+In a class declaration, they are prepended by static keyword, like this:
+
+That actually does the same as assigning it as a property directly:
+
+The value of this in User.staticMethod() call is the class constructor User itself (the “object before dot” rule).
+
+Usually, static methods are used to implement functions that belong to the class as a whole, but not to any particular object of it.
+
+For instance, we have Article objects and need a function to compare them.
+
+A natural solution would be to add Article.compare static method:
+
+Here Article.compare method stands “above” articles, as a means to compare them. It’s not a method of an article, but rather of the whole class.
+
+Another example would be a so-called “factory” method.
+
+Let’s say, we need multiple ways to create an article:
+
+The first way can be implemented by the constructor. And for the second one we can make a static method of the class.
+
+Such as Article.createTodays() here:
+
+Now every time we need to create a today’s digest, we can call Article.createTodays(). Once again, that’s not a method of an article, but a method of the whole class.
+
+Static methods are also used in database-related classes to search/save/remove entries from the database, like this:
+
+Static methods are callable on classes, not on individual objects.
+
+E.g. such code won’t work:
+
+Static properties are also possible, they look like regular class properties, but prepended by static:
+
+That is the same as a direct assignment to Article:
+
+Static properties and methods are inherited.
+
+For instance, Animal.compare and Animal.planet in the code below are inherited and accessible as Rabbit.compare and Rabbit.planet:
+
+Now when we call Rabbit.compare, the inherited Animal.compare will be called.
+
+How does it work? Again, using prototypes. As you might have already guessed, extends gives Rabbit the [[Prototype]] reference to Animal.
+
+So, Rabbit extends Animal creates two [[Prototype]] references:
+
+As a result, inheritance works both for regular and static methods.
+
+Here, let’s check that by code:
+
+Static methods are used for the functionality that belongs to the class “as a whole”. It doesn’t relate to a concrete class instance.
+
+For example, a method for comparison Article.compare(article1, article2) or a factory method Article.createTodays().
+
+They are labeled by the word static in class declaration.
+
+Static properties are used when we’d like to store class-level data, also not bound to an instance.
+
+The syntax is:
+
+Technically, static declaration is the same as assigning to the class itself:
+
+Static properties and methods are inherited.
+
+For class B extends A the prototype of the class B itself points to A: B.[[Prototype]] = A. So if a field is not found in B, the search continues in A.

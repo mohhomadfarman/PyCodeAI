@@ -1,0 +1,60 @@
+Title: Currying
+Source: https://javascript.info/currying-partials
+
+Currying is an advanced technique of working with functions. It’s used not only in JavaScript, but in other languages as well.
+
+Currying is a transformation of functions that translates a function from callable as f(a, b, c) into callable as f(a)(b)(c).
+
+Currying doesn’t call a function. It just transforms it.
+
+Let’s see an example first, to better understand what we’re talking about, and then practical applications.
+
+We’ll create a helper function curry(f) that performs currying for a two-argument f. In other words, curry(f) for two-argument f(a, b) translates it into a function that runs as f(a)(b):
+
+As you can see, the implementation is straightforward: it’s just two wrappers.
+
+More advanced implementations of currying, such as _.curry from lodash library, return a wrapper that allows a function to be called both normally and partially:
+
+To understand the benefits we need a worthy real-life example.
+
+For instance, we have the logging function log(date, importance, message) that formats and outputs the information. In real projects such functions have many useful features like sending logs over the network, here we’ll just use alert:
+
+Let’s curry it!
+
+After that log works normally:
+
+…But also works in the curried form:
+
+Now we can easily make a convenience function for current logs:
+
+Now logNow is log with fixed first argument, in other words “partially applied function” or “partial” for short.
+
+We can go further and make a convenience function for current debug logs:
+
+So:
+
+In case you’d like to get in to the details, here’s the “advanced” curry implementation for multi-argument functions that we could use above.
+
+It’s pretty short:
+
+Usage examples:
+
+The new curry may look complicated, but it’s actually easy to understand.
+
+The result of curry(func) call is the wrapper curried that looks like this:
+
+When we run it, there are two if execution branches:
+
+Then, if we call it, again, we’ll get either a new partial (if not enough arguments) or, finally, the result.
+
+The currying requires the function to have a fixed number of arguments.
+
+A function that uses rest parameters, such as f(...args), can’t be curried this way.
+
+By definition, currying should convert sum(a, b, c) into sum(a)(b)(c).
+
+But most implementations of currying in JavaScript are advanced, as described: they also keep the function callable in the multi-argument variant.
+
+Currying is a transform that makes f(a,b,c) callable as f(a)(b)(c). JavaScript implementations usually both keep the function callable normally and return the partial if the arguments count is not enough.
+
+Currying allows us to easily get partials. As we’ve seen in the logging example, after currying the three argument universal function log(date, importance, message) gives us partials when called with one argument (like log(date)) or two arguments (like log(date, importance)).

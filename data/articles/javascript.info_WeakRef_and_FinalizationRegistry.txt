@@ -1,0 +1,232 @@
+Title: WeakRef and FinalizationRegistry
+Source: https://javascript.info/weakref-finalizationregistry
+
+This article covers a very narrowly focused topic, that most developers extremely rarely encounter in practice (and may not even be aware of its existence).
+
+We recommend skipping this chapter if you have just started learning JavaScript.
+
+Recalling the basic concept of the reachability principle from the Garbage collection chapter,
+we can note that the JavaScript engine is guaranteed to keep values in memory that are accessible or in use.
+
+For example:
+
+Or a similar, but slightly more complicated code with two strong references:
+
+The object { name: "John" } would only be deleted from memory if there were no strong references to it (if we also overwrote the value of the admin variable).
+
+In JavaScript, there is a concept called WeakRef, which behaves slightly differently in this case.
+
+Strong reference – is a reference to an object or value, that prevents them from being deleted by the garbage collector. Thereby, keeping the object or value in memory, to which it points.
+
+This means, that the object or value remains in memory and is not collected by the garbage collector as long, as there are active strong references to it.
+
+In JavaScript, ordinary references to objects are strong references. For example:
+
+Weak reference – is a reference to an object or value, that does not prevent them from being deleted by the garbage collector.
+An object or value can be deleted by the garbage collector if, the only remaining references to them are weak references.
+
+Before we dive into it, it is worth noting that the correct use of the structures discussed in this article requires very careful thought, and they are best avoided if possible.
+
+WeakRef – is an object, that contains a weak reference to another object, called target or referent.
+
+The peculiarity of WeakRef is that it does not prevent the garbage collector from deleting its referent-object. In other words, a WeakRef object does not keep the referent object alive.
+
+Now let’s take the user variable as the “referent” and create a weak reference from it to the admin variable.
+To create a weak reference, you need to use the WeakRef constructor, passing in the target object (the object you want a weak reference to).
+
+In our case — this is the user variable:
+
+The diagram below depicts two types of references: a strong reference using the user variable and a weak reference using the admin variable:
+
+Then, at some point, we stop using the user variable – it gets overwritten, goes out of scope, etc., while keeping the WeakRef instance in the admin variable:
+
+A weak reference to an object is not enough to keep it “alive”. When the only remaining references to a referent-object are weak references, the garbage collector is free to destroy this object and use its memory for something else.
+
+However, until the object is actually destroyed, the weak reference may return it, even if there are no more strong references to this object.
+That is, our object becomes a kind of “Schrödinger’s cat” – we cannot know for sure whether it’s “alive” or “dead”:
+
+At this point, to get the object from the WeakRef instance, we will use its deref() method.
+
+The deref() method returns the referent-object that the WeakRef points to, if the object is still in memory. If the object has been deleted by the garbage collector, then the deref() method will return undefined:
+
+WeakRef is typically used to create caches or associative arrays that store resource-intensive objects.
+This allows one to avoid preventing these objects from being collected by the garbage collector solely based on their presence in the cache or associative array.
+
+One of the primary examples – is a situation when we have numerous binary image objects (for instance, represented as ArrayBuffer or Blob), and we want to associate a name or path with each image.
+Existing data structures are not quite suitable for these purposes:
+
+But, in this situation, we need a data structure that would use weak references in its values.
+
+For this purpose, we can use a Map collection, whose values are WeakRef instances referring to the large objects we need.
+Consequently, we will not keep these large and unnecessary objects in memory longer than they should be.
+
+Otherwise, this is a way to get the image object from the cache if it is still reachable.
+If it has been garbage collected, we will re-generate or re-download it again.
+
+This way, less memory is used in some situations.
+
+Below is a code snippet that demonstrates the technique of using WeakRef.
+
+In short, we use a Map with string keys and WeakRef objects as their values.
+If the WeakRef object has not been collected by the garbage collector, we get it from the cache.
+Otherwise, we re-download it again and put it in the cache for further possible reuse:
+
+Let’s delve into the details of what happened here:
+
+Now we have a Map collection, where the keys – are image names as strings, and values – are WeakRef objects containing the images themselves.
+
+This technique helps to avoid allocating a large amount of memory for resource-intensive objects, that nobody uses anymore.
+It also saves memory and time in case of reusing cached objects.
+
+Here is a visual representation of what this code looks like:
+
+But, this implementation has its drawbacks: over time, Map will be filled with strings as keys, that point to a WeakRef, whose referent-object has already been garbage collected:
+
+One way to handle this problem – is to periodically scavenge the cache and clear out “dead” entries.
+Another way – is to use finalizers, which we will explore next.
+
+Another use case for WeakRef – is tracking DOM objects.
+
+Let’s imagine a scenario where some third-party code or library interacts with elements on our page as long as they exist in the DOM.
+For example, it could be an external utility for monitoring and notifying about the system’s state (commonly so-called “logger” – a program that sends informational messages called “logs”).
+
+Interactive example:
+
+When the “Start sending messages” button is clicked, in the so-called “logs display window” (an element with the .window__body class), messages (logs) start to appear.
+
+But, as soon as this element is deleted from the DOM, the logger should stop sending messages.
+To reproduce the removal of this element, just click the “Close” button in the top right corner.
+
+In order not to complicate our work, and not to notify third-party code every time our DOM-element is available, and when it is not, it will be enough to create a weak reference to it using WeakRef.
+
+Once the element is removed from the DOM, the logger will notice it and stop sending messages.
+
+Now let’s take a closer look at the source code (tab index.js):
+
+Get the DOM-element of the “Start sending messages” button.
+
+Get the DOM-element of the “Close” button.
+
+Get the DOM-element of the logs display window using the new WeakRef() constructor. This way, the windowElementRef variable holds a weak reference to the DOM-element.
+
+Add an event listener on the “Start sending messages” button, responsible for starting the logger when clicked.
+
+Add an event listener on the “Close” button, responsible for closing the logs display window when clicked.
+
+Use setInterval to start displaying a new message every second.
+
+If the DOM-element of the logs display window is still accessible and kept in memory, create and send a new message.
+
+If the deref() method returns undefined, it means that the DOM-element has been deleted from memory. In this case, the logger stops displaying messages and clears the timer.
+
+alert, which will be called, after the DOM-element of the logs display window is deleted from memory (i.e. after clicking the “Close” button). Note, that deletion from memory may not happen immediately, as it depends only on the internal mechanisms of the garbage collector.
+
+We cannot control this process directly from the code. However, despite this, we still have the option to force garbage collection from the browser.
+
+In Google Chrome, for example, to do this, you need to open the developer tools (Ctrl + Shift + J on Windows/Linux or Option + ⌘ + J on macOS), go to the “Performance” tab, and click on the bin icon button – “Collect garbage”:
+
+Now it is time to talk about finalizers. Before we move on, let’s clarify the terminology:
+
+Cleanup callback (finalizer) – is a function that is executed, when an object, registered in the FinalizationRegistry, is deleted from memory by the garbage collector.
+
+Its purpose – is to provide the ability to perform additional operations, related to the object, after it has been finally deleted from memory.
+
+Registry (or FinalizationRegistry) – is a special object in JavaScript that manages the registration and unregistration of objects and their cleanup callbacks.
+
+This mechanism allows registering an object to track and associate a cleanup callback with it.
+Essentially it is a structure that stores information about registered objects and their cleanup callbacks, and then automatically invokes those callbacks when the objects are deleted from memory.
+
+To create an instance of the FinalizationRegistry, it needs to call its constructor, which takes a single argument – the cleanup callback (finalizer).
+
+Syntax:
+
+Here:
+
+FinalizationRegistry methods:
+
+register(target, heldValue [, unregisterToken]) – used to register objects in the registry.
+
+target – the object being registered for tracking. If the target is garbage collected, the cleanup callback will be called with heldValue as its argument.
+
+Optional unregisterToken – an unregistration token. It can be passed to unregister an object before the garbage collector deletes it. Typically, the target object is used as unregisterToken, which is the standard practice.
+
+unregister(unregisterToken) – the unregister method is used to unregister an object from the registry. It takes one argument – unregisterToken (the unregister token that was obtained when registering the object).
+
+Now let’s move on to a simple example. Let’s use the already-known user object and create an instance of FinalizationRegistry:
+
+Then, we will register the object, that requires a cleanup callback by calling the register method:
+
+The registry does not keep a strong reference to the object being registered, as this would defeat its purpose. If the registry kept a strong reference, then the object would never be garbage collected.
+
+If the object is deleted by the garbage collector, our cleanup callback may be called at some point in the future, with the heldValue passed to it:
+
+There are also situations where, even in implementations that use a cleanup callback, there is a chance that it will not be called.
+
+For example:
+
+Returning to our weak cache example, we can notice the following:
+
+Here is an improved caching example using FinalizationRegistry:
+
+To manage the cleanup of “dead” cache entries, when the associated WeakRef objects are collected by the garbage collector, we create a FinalizationRegistry cleanup registry.
+
+The important point here is, that in the cleanup callback, it should be checked, if the entry was deleted by the garbage collector and not re-added, in order not to delete a “live” entry.
+
+Once the new value (image) is downloaded and put into the cache, we register it in the finalizer registry to track the WeakRef object.
+
+This implementation contains only actual or “live” key/value pairs.
+In this case, each WeakRef object is registered in the FinalizationRegistry.
+And after the objects are cleaned up by the garbage collector, the cleanup callback will delete all undefined values.
+
+Here is a visual representation of the updated code:
+
+A key aspect of the updated implementation is that finalizers allow parallel processes to be created between the “main” program and cleanup callbacks.
+In the context of JavaScript, the “main” program – is our JavaScript-code, that runs and executes in our application or web page.
+
+Hence, from the moment an object is marked for deletion by the garbage collector, and to the actual execution of the cleanup callback, there may be a certain time gap.
+It is important to understand that during this time gap, the main program can make any changes to the object or even bring it back to memory.
+
+That’s why, in the cleanup callback, we must check to see if an entry has been added back to the cache by the main program to avoid deleting “live” entries.
+Similarly, when searching for a key in the cache, there is a chance that the value has been deleted by the garbage collector, but the cleanup callback has not been executed yet.
+
+Such situations require special attention if you are working with FinalizationRegistry.
+
+Moving from theory to practice, imagine a real-life scenario, where a user synchronizes their photos on a mobile device with some cloud service
+(such as iCloud or Google Photos),
+and wants to view them from other devices. In addition to the basic functionality of viewing photos, such services offer a lot of additional features, for example:
+
+Here, as an example, we will use a fairly primitive implementation of such a service.
+The main point – is to show a possible scenario of using WeakRef and FinalizationRegistry together in real life.
+
+Here is what it looks like:
+
+To increase page loading speed, it would be reasonable to download and display photo thumbnails in compressed quality.
+But, to create a collage from selected photos, download and use them in full-size quality.
+
+Below, we can see, that the intrinsic size of the thumbnails is 240x240 pixels.
+The size was chosen on purpose to increase loading speed.
+Moreover, we do not need full-size photos in preview mode.
+
+Paying attention to the output in the console, you can see, which of the photos were downloaded from the cloud – this is indicated by FETCHED_IMAGE.
+Since this is the first attempt to create a collage, this means, that at this stage the “weak cache” was still empty, and all the photos were downloaded from the cloud and put in it.
+
+But, along with the process of downloading images, there is also a process of memory cleanup by the garbage collector.
+This means, that the object stored in the cache, which we refer to, using a weak reference, is deleted by the garbage collector.
+And our finalizer executes successfully, thereby deleting the key, by which the image was stored in the cache.
+CLEANED_IMAGE notifies us about it:
+
+Of course, it is important to remember, that such behavior is not guaranteed, and depends on the specific implementation and operation of the garbage collector.
+
+Based on this, a completely logical question immediately arises: why do not we use an ordinary cache, where we can manage its entities ourselves, instead of relying on the garbage collector?
+That’s right, in the vast majority of cases there is no need to use WeakRef and FinalizationRegistry.
+
+Here, we simply demonstrated an alternative implementation of similar functionality, using a non-trivial approach with interesting language features.
+Still, we cannot rely on this example, if we need a constant and predictable result.
+
+You can open this example in the sandbox.
+
+WeakRef – designed to create weak references to objects, allowing them to be deleted from memory by the garbage collector if there are no longer strong references to them.
+This is beneficial for addressing excessive memory usage and optimizing the utilization of system resources in applications.
+
+FinalizationRegistry – is a tool for registering callbacks, that are executed when objects that are no longer strongly referenced, are destroyed.
+This allows releasing resources associated with the object or performing other necessary operations before deleting the object from memory.

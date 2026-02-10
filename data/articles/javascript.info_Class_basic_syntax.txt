@@ -1,0 +1,122 @@
+Title: Class basic syntax
+Source: https://javascript.info/class
+
+In object-oriented programming, a class is an extensible program-code-template for creating objects, providing initial values for state (member variables) and implementations of behavior (member functions or methods).
+
+In practice, we often need to create many objects of the same kind, like users, or goods or whatever.
+
+As we already know from the chapter Constructor, operator "new", new function can help with that.
+
+But in the modern JavaScript, there’s a more advanced “class” construct, that introduces great new features which are useful for object-oriented programming.
+
+The basic syntax is:
+
+Then use new MyClass() to create a new object with all the listed methods.
+
+The constructor() method is called automatically by new, so we can initialize the object there.
+
+For example:
+
+When new User("John") is called:
+
+…Then we can call object methods, such as user.sayHi().
+
+A common pitfall for novice developers is to put a comma between class methods, which would result in a syntax error.
+
+The notation here is not to be confused with object literals. Within the class, no commas are required.
+
+So, what exactly is a class? That’s not an entirely new language-level entity, as one might think.
+
+Let’s unveil any magic and see what a class really is. That’ll help in understanding many complex aspects.
+
+In JavaScript, a class is a kind of function.
+
+Here, take a look:
+
+What class User {...} construct really does is:
+
+After new User object is created, when we call its method, it’s taken from the prototype, just as described in the chapter F.prototype. So the object has access to class methods.
+
+We can illustrate the result of class User declaration as:
+
+Here’s the code to introspect it:
+
+Sometimes people say that class is a “syntactic sugar” (syntax that is designed to make things easier to read, but doesn’t introduce anything new), because we could actually declare the same thing without using the class keyword at all:
+
+The result of this definition is about the same. So, there are indeed reasons why class can be considered a syntactic sugar to define a constructor together with its prototype methods.
+
+Still, there are important differences.
+
+First, a function created by class is labelled by a special internal property [[IsClassConstructor]]: true. So it’s not entirely the same as creating it manually.
+
+The language checks for that property in a variety of places. For example, unlike a regular function, it must be called with new:
+
+Also, a string representation of a class constructor in most JavaScript engines starts with the “class…”
+
+There are other differences, we’ll see them soon.
+
+Class methods are non-enumerable.
+A class definition sets enumerable flag to false for all methods in the "prototype".
+
+That’s good, because if we for..in over an object, we usually don’t want its class methods.
+
+Classes always use strict.
+All code inside the class construct is automatically in strict mode.
+
+Besides, class syntax brings many other features that we’ll explore later.
+
+Just like functions, classes can be defined inside another expression, passed around, returned, assigned, etc.
+
+Here’s an example of a class expression:
+
+Similar to Named Function Expressions, class expressions may have a name.
+
+If a class expression has a name, it’s visible inside the class only:
+
+We can even make classes dynamically “on-demand”, like this:
+
+Just like literal objects, classes may include getters/setters, computed properties etc.
+
+Here’s an example for user.name implemented using get/set:
+
+Technically, such class declaration works by creating getters and setters in User.prototype.
+
+Here’s an example with a computed method name using brackets [...]:
+
+Such features are easy to remember, as they resemble that of literal objects.
+
+Class fields are a recent addition to the language.
+
+Previously, our classes only had methods.
+
+“Class fields” is a syntax that allows to add any properties.
+
+For instance, let’s add name property to class User:
+
+So, we just write “ = ” in the declaration, and that’s it.
+
+The important difference of class fields is that they are set on individual objects, not User.prototype:
+
+We can also assign values using more complex expressions and function calls:
+
+As demonstrated in the chapter Function binding functions in JavaScript have a dynamic this. It depends on the context of the call.
+
+So if an object method is passed around and called in another context, this won’t be a reference to its object any more.
+
+For instance, this code will show undefined:
+
+The problem is called “losing this”.
+
+There are two approaches to fixing it, as discussed in the chapter Function binding:
+
+Class fields provide another, quite elegant syntax:
+
+The class field click = () => {...} is created on a per-object basis, there’s a separate function for each Button object, with this inside it referencing that object. We can pass button.click around anywhere, and the value of this will always be correct.
+
+That’s especially useful in browser environment, for event listeners.
+
+The basic class syntax looks like this:
+
+MyClass is technically a function (the one that we provide as constructor), while methods, getters and setters are written to MyClass.prototype.
+
+In the next chapters we’ll learn more about classes, including inheritance and other features.

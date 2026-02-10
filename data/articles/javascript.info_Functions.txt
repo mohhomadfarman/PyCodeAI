@@ -1,0 +1,176 @@
+Title: Functions
+Source: https://javascript.info/function-basics
+
+Quite often we need to perform a similar action in many places of the script.
+
+For example, we need to show a nice-looking message when a visitor logs in, logs out and maybe somewhere else.
+
+Functions are the main “building blocks” of the program. They allow the code to be called many times without repetition.
+
+We’ve already seen examples of built-in functions, like alert(message), prompt(message, default) and confirm(question). But we can create functions of our own as well.
+
+To create a function we can use a function declaration.
+
+It looks like this:
+
+The function keyword goes first, then goes the name of the function, then a list of parameters between the parentheses (comma-separated, empty in the example above, we’ll see examples later) and finally the code of the function, also named “the function body”, between curly braces.
+
+Our new function can be called by its name: showMessage().
+
+For instance:
+
+The call showMessage() executes the code of the function. Here we will see the message two times.
+
+This example clearly demonstrates one of the main purposes of functions: to avoid code duplication.
+
+If we ever need to change the message or the way it is shown, it’s enough to modify the code in one place: the function which outputs it.
+
+A variable declared inside a function is only visible inside that function.
+
+For example:
+
+A function can access an outer variable as well, for example:
+
+The function has full access to the outer variable. It can modify it as well.
+
+For instance:
+
+The outer variable is only used if there’s no local one.
+
+If a same-named variable is declared inside the function then it shadows the outer one. For instance, in the code below the function uses the local userName. The outer one is ignored:
+
+Variables declared outside of any function, such as the outer userName in the code above, are called global.
+
+Global variables are visible from any function (unless shadowed by locals).
+
+It’s a good practice to minimize the use of global variables. Modern code has few or no globals. Most variables reside in their functions. Sometimes though, they can be useful to store project-level data.
+
+We can pass arbitrary data to functions using parameters.
+
+In the example below, the function has two parameters: from and text.
+
+When the function is called in lines (*) and (**), the given values are copied to local variables from and text. Then the function uses them.
+
+Here’s one more example: we have a variable from and pass it to the function. Please note: the function changes from, but the change is not seen outside, because a function always gets a copy of the value:
+
+When a value is passed as a function parameter, it’s also called an argument.
+
+In other words, to put these terms straight:
+
+We declare functions listing their parameters, then call them passing arguments.
+
+In the example above, one might say: “the function showMessage is declared with two parameters, then called with two arguments: from and "Hello"”.
+
+If a function is called, but an argument is not provided, then the corresponding value becomes undefined.
+
+For instance, the aforementioned function showMessage(from, text) can be called with a single argument:
+
+That’s not an error. Such a call would output "*Ann*: undefined". As the value for text isn’t passed, it becomes undefined.
+
+We can specify the so-called “default” (to use if omitted) value for a parameter in the function declaration, using =:
+
+Now if the text parameter is not passed, it will get the value "no text given".
+
+The default value also jumps in if the parameter exists, but strictly equals undefined, like this:
+
+Here "no text given" is a string, but it can be a more complex expression, which is only evaluated and assigned if the parameter is missing. So, this is also possible:
+
+In JavaScript, a default parameter is evaluated every time the function is called without the respective parameter.
+
+In the example above, anotherFunction() isn’t called at all, if the text parameter is provided.
+
+On the other hand, it’s independently called every time when text is missing.
+
+Several years ago, JavaScript didn’t support the syntax for default parameters. So people used other ways to specify them.
+
+Nowadays, we can come across them in old scripts.
+
+For example, an explicit check for undefined:
+
+…Or using the || operator:
+
+Sometimes it makes sense to assign default values for parameters at a later stage after the function declaration.
+
+We can check if the parameter is passed during the function execution, by comparing it with undefined:
+
+…Or we could use the || operator:
+
+Modern JavaScript engines support the nullish coalescing operator ??, it’s better when most falsy values, such as 0, should be considered “normal”:
+
+A function can return a value back into the calling code as the result.
+
+The simplest example would be a function that sums two values:
+
+The directive return can be in any place of the function. When the execution reaches it, the function stops, and the value is returned to the calling code (assigned to result above).
+
+There may be many occurrences of return in a single function. For instance:
+
+It is possible to use return without a value. That causes the function to exit immediately.
+
+For example:
+
+In the code above, if checkAge(age) returns false, then showMovie won’t proceed to the alert.
+
+If a function does not return a value, it is the same as if it returns undefined:
+
+An empty return is also the same as return undefined:
+
+For a long expression in return, it might be tempting to put it on a separate line, like this:
+
+That doesn’t work, because JavaScript assumes a semicolon after return. That’ll work the same as:
+
+So, it effectively becomes an empty return.
+
+If we want the returned expression to wrap across multiple lines, we should start it at the same line as return. Or at least put the opening parentheses there as follows:
+
+And it will work just as we expect it to.
+
+Functions are actions. So their name is usually a verb. It should be brief, as accurate as possible and describe what the function does, so that someone reading the code gets an indication of what the function does.
+
+It is a widespread practice to start a function with a verbal prefix which vaguely describes the action. There must be an agreement within the team on the meaning of the prefixes.
+
+For instance, functions that start with "show" usually show something.
+
+Function starting with…
+
+Examples of such names:
+
+With prefixes in place, a glance at a function name gives an understanding what kind of work it does and what kind of value it returns.
+
+A function should do exactly what is suggested by its name, no more.
+
+Two independent actions usually deserve two functions, even if they are usually called together (in that case we can make a 3rd function that calls those two).
+
+A few examples of breaking this rule:
+
+These examples assume common meanings of prefixes. You and your team are free to agree on other meanings, but usually they’re not much different. In any case, you should have a firm understanding of what a prefix means, what a prefixed function can and cannot do. All same-prefixed functions should obey the rules. And the team should share the knowledge.
+
+Functions that are used very often sometimes have ultrashort names.
+
+For example, the jQuery framework defines a function with $. The Lodash library has its core function named _.
+
+These are exceptions. Generally function names should be concise and descriptive.
+
+Functions should be short and do exactly one thing. If that thing is big, maybe it’s worth it to split the function into a few smaller functions. Sometimes following this rule may not be that easy, but it’s definitely a good thing.
+
+A separate function is not only easier to test and debug – its very existence is a great comment!
+
+For instance, compare the two functions showPrimes(n) below. Each one outputs prime numbers up to n.
+
+The first variant uses a label:
+
+The second variant uses an additional function isPrime(n) to test for primality:
+
+The second variant is easier to understand, isn’t it? Instead of the code piece we see a name of the action (isPrime). Sometimes people refer to such code as self-describing.
+
+So, functions can be created even if we don’t intend to reuse them. They structure the code and make it readable.
+
+A function declaration looks like this:
+
+To make the code clean and easy to understand, it’s recommended to use mainly local variables and parameters in the function, not outer variables.
+
+It is always easier to understand a function which gets parameters, works with them and returns a result than a function which gets no parameters, but modifies outer variables as a side effect.
+
+Function naming:
+
+Functions are the main building blocks of scripts. Now we’ve covered the basics, so we actually can start creating and using them. But that’s only the beginning of the path. We are going to return to them many times, going more deeply into their advanced features.

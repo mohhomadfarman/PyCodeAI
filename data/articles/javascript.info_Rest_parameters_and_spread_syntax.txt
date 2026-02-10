@@ -1,0 +1,102 @@
+Title: Rest parameters and spread syntax
+Source: https://javascript.info/rest-parameters-spread
+
+Many JavaScript built-in functions support an arbitrary number of arguments.
+
+For instance:
+
+In this chapter we’ll learn how to do the same. And also, how to pass arrays to such functions as parameters.
+
+A function can be called with any number of arguments, no matter how it is defined.
+
+Like here:
+
+There will be no error because of “excessive” arguments. But of course in the result only the first two will be counted, so the result in the code above is 3.
+
+The rest of the parameters can be included in the function definition by using three dots ... followed by the name of the array that will contain them. The dots literally mean “gather the remaining parameters into an array”.
+
+For instance, to gather all arguments into array args:
+
+We can choose to get the first parameters as variables, and gather only the rest.
+
+Here the first two arguments go into variables and the rest go into titles array:
+
+The rest parameters gather all remaining arguments, so the following does not make sense and causes an error:
+
+The ...rest must always be last.
+
+There is also a special array-like object named arguments that contains all arguments by their index.
+
+For instance:
+
+In old times, rest parameters did not exist in the language, and using arguments was the only way to get all arguments of the function. And it still works, we can find it in the old code.
+
+But the downside is that although arguments is both array-like and iterable, it’s not an array. It does not support array methods, so we can’t call arguments.map(...) for example.
+
+Also, it always contains all arguments. We can’t capture them partially, like we did with rest parameters.
+
+So when we need these features, then rest parameters are preferred.
+
+If we access the arguments object from an arrow function, it takes them from the outer “normal” function.
+
+Here’s an example:
+
+As we remember, arrow functions don’t have their own this. Now we know they don’t have the special arguments object either.
+
+We’ve just seen how to get an array from the list of parameters.
+
+But sometimes we need to do exactly the reverse.
+
+For instance, there’s a built-in function Math.max that returns the greatest number from a list:
+
+Now let’s say we have an array [3, 5, 1]. How do we call Math.max with it?
+
+Passing it “as is” won’t work, because Math.max expects a list of numeric arguments, not a single array:
+
+And surely we can’t manually list items in the code Math.max(arr[0], arr[1], arr[2]), because we may be unsure how many there are. As our script executes, there could be a lot, or there could be none. And that would get ugly.
+
+Spread syntax to the rescue! It looks similar to rest parameters, also using ..., but does quite the opposite.
+
+When ...arr is used in the function call, it “expands” an iterable object arr into the list of arguments.
+
+For Math.max:
+
+We also can pass multiple iterables this way:
+
+We can even combine the spread syntax with normal values:
+
+Also, the spread syntax can be used to merge arrays:
+
+In the examples above we used an array to demonstrate the spread syntax, but any iterable will do.
+
+For instance, here we use the spread syntax to turn the string into array of characters:
+
+The spread syntax internally uses iterators to gather elements, the same way as for..of does.
+
+So, for a string, for..of returns characters and ...str becomes "H","e","l","l","o". The list of characters is passed to array initializer [...str].
+
+For this particular task we could also use Array.from, because it converts an iterable (like a string) into an array:
+
+The result is the same as [...str].
+
+But there’s a subtle difference between Array.from(obj) and [...obj]:
+
+So, for the task of turning something into an array, Array.from tends to be more universal.
+
+Remember when we talked about Object.assign() in the past?
+
+It is possible to do the same thing with the spread syntax.
+
+Note that it is possible to do the same thing to make a copy of an object:
+
+This way of copying an object is much shorter than let objCopy = Object.assign({}, obj) or for an array let arrCopy = Object.assign([], arr) so we prefer to use it whenever we can.
+
+When we see "..." in the code, it is either rest parameters or the spread syntax.
+
+There’s an easy way to distinguish between them:
+
+Use patterns:
+
+Together they help to travel between a list and an array of parameters with ease.
+
+All arguments of a function call are also available in “old-style” arguments: array-like iterable object.

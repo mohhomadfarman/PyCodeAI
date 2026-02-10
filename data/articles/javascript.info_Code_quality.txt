@@ -1,0 +1,4 @@
+Title: Code quality
+Source: https://javascript.info/code-quality
+
+This chapter explains coding practices that we’ll use further in the development.

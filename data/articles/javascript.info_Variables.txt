@@ -1,0 +1,140 @@
+Title: Variables
+Source: https://javascript.info/variables
+
+Most of the time, a JavaScript application needs to work with information. Here are two examples:
+
+Variables are used to store this information.
+
+A variable is a “named storage” for data. We can use variables to store goodies, visitors, and other data.
+
+To create a variable in JavaScript, use the let keyword.
+
+The statement below creates (in other words: declares) a variable with the name “message”:
+
+Now, we can put some data into it by using the assignment operator =:
+
+The string is now saved into the memory area associated with the variable. We can access it using the variable name:
+
+To be concise, we can combine the variable declaration and assignment into a single line:
+
+We can also declare multiple variables in one line:
+
+That might seem shorter, but we don’t recommend it. For the sake of better readability, please use a single line per variable.
+
+The multiline variant is a bit longer, but easier to read:
+
+Some people also define multiple variables in this multiline style:
+
+…Or even in the “comma-first” style:
+
+Technically, all these variants do the same thing. So, it’s a matter of personal taste and aesthetics.
+
+In older scripts, you may also find another keyword: var instead of let:
+
+The var keyword is almost the same as let. It also declares a variable but in a slightly different, “old-school” way.
+
+There are subtle differences between let and var, but they do not matter to us yet. We’ll cover them in detail in the chapter The old "var".
+
+We can easily grasp the concept of a “variable” if we imagine it as a “box” for data, with a uniquely-named sticker on it.
+
+For instance, the variable message can be imagined as a box labelled "message" with the value "Hello!" in it:
+
+We can put any value in the box.
+
+We can also change it as many times as we want:
+
+When the value is changed, the old data is removed from the variable:
+
+We can also declare two variables and copy data from one into the other.
+
+A variable should be declared only once.
+
+A repeated declaration of the same variable is an error:
+
+So, we should declare a variable once and then refer to it without let.
+
+It’s interesting to note that there exist so-called pure functional programming languages, such as Haskell, that forbid changing variable values.
+
+In such languages, once the value is stored “in the box”, it’s there forever. If we need to store something else, the language forces us to create a new box (declare a new variable). We can’t reuse the old one.
+
+Though it may seem a little odd at first sight, these languages are quite capable of serious development. More than that, there are areas like parallel computations where this limitation confers certain benefits.
+
+There are two limitations on variable names in JavaScript:
+
+Examples of valid names:
+
+When the name contains multiple words, camelCase is commonly used. That is: words go one after another, each word except first starting with a capital letter: myVeryLongName.
+
+What’s interesting – the dollar sign '$' and the underscore '_' can also be used in names. They are regular symbols, just like letters, without any special meaning.
+
+These names are valid:
+
+Examples of incorrect variable names:
+
+Variables named apple and APPLE are two different variables.
+
+It is possible to use any language, including Cyrillic letters, Chinese logograms and so on, like this:
+
+Technically, there is no error here. Such names are allowed, but there is an international convention to use English in variable names. Even if we’re writing a small script, it may have a long life ahead. People from other countries may need to read it sometime.
+
+There is a list of reserved words, which cannot be used as variable names because they are used by the language itself.
+
+For example: let, class, return, and function are reserved.
+
+The code below gives a syntax error:
+
+Normally, we need to define a variable before using it. But in the old times, it was technically possible to create a variable by a mere assignment of the value without using let. This still works now if we don’t put use strict in our scripts to maintain compatibility with old scripts.
+
+This is a bad practice and would cause an error in strict mode:
+
+To declare a constant (unchanging) variable, use const instead of let:
+
+Variables declared using const are called “constants”. They cannot be reassigned. An attempt to do so would cause an error:
+
+When a programmer is sure that a variable will never change, they can declare it with const to guarantee and communicate that fact to everyone.
+
+There is a widespread practice to use constants as aliases for difficult-to-remember values that are known before execution.
+
+Such constants are named using capital letters and underscores.
+
+For instance, let’s make constants for colors in so-called “web” (hexadecimal) format:
+
+Benefits:
+
+When should we use capitals for a constant and when should we name it normally? Let’s make that clear.
+
+Being a “constant” just means that a variable’s value never changes. But some constants are known before execution (like a hexadecimal value for red) and some constants are calculated in run-time, during the execution, but do not change after their initial assignment.
+
+For instance:
+
+The value of pageLoadTime is not known before the page load, so it’s named normally. But it’s still a constant because it doesn’t change after the assignment.
+
+In other words, capital-named constants are only used as aliases for “hard-coded” values.
+
+Talking about variables, there’s one more extremely important thing.
+
+A variable name should have a clean, obvious meaning, describing the data that it stores.
+
+Variable naming is one of the most important and complex skills in programming. A glance at variable names can reveal which code was written by a beginner versus an experienced developer.
+
+In a real project, most of the time is spent modifying and extending an existing code base rather than writing something completely separate from scratch. When we return to some code after doing something else for a while, it’s much easier to find information that is well-labelled. Or, in other words, when the variables have good names.
+
+Please spend time thinking about the right name for a variable before declaring it. Doing so will repay you handsomely.
+
+Some good-to-follow rules are:
+
+Sounds simple? Indeed it is, but creating descriptive and concise variable names in practice is not. Go for it.
+
+And the last note. There are some lazy programmers who, instead of declaring new variables, tend to reuse existing ones.
+
+As a result, their variables are like boxes into which people throw different things without changing their stickers. What’s inside the box now? Who knows? We need to come closer and check.
+
+Such programmers save a little bit on variable declaration but lose ten times more on debugging.
+
+An extra variable is good, not evil.
+
+Modern JavaScript minifiers and browsers optimize code well enough, so it won’t create performance issues. Using different variables for different values can even help the engine optimize your code.
+
+We can declare variables to store data by using the var, let, or const keywords.
+
+Variables should be named in a way that allows us to easily understand what’s inside them.

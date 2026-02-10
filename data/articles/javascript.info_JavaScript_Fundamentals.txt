@@ -1,0 +1,4 @@
+Title: JavaScript Fundamentals
+Source: https://javascript.info/first-steps
+
+Let’s learn the fundamentals of script building.

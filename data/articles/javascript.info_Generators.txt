@@ -1,0 +1,136 @@
+Title: Generators
+Source: https://javascript.info/generators
+
+Regular functions return only one, single value (or nothing).
+
+Generators can return (“yield”) multiple values, one after another, on-demand. They work great with iterables, allowing to create data streams with ease.
+
+To create a generator, we need a special syntax construct: function*, so-called “generator function”.
+
+It looks like this:
+
+Generator functions behave differently from regular ones. When such function is called, it doesn’t run its code. Instead it returns a special object, called “generator object”, to manage the execution.
+
+Here, take a look:
+
+The function code execution hasn’t started yet:
+
+The main method of a generator is next(). When called, it runs the execution until the nearest yield <value> statement (value can be omitted, then it’s undefined). Then the function execution pauses, and the yielded value is returned to the outer code.
+
+The result of next() is always an object with two properties:
+
+For instance, here we create the generator and get its first yielded value:
+
+As of now, we got the first value only, and the function execution is on the second line:
+
+Let’s call generator.next() again. It resumes the code execution and returns the next yield:
+
+And, if we call it a third time, the execution reaches the return statement that finishes the function:
+
+Now the generator is done. We should see it from done:true and process value:3 as the final result.
+
+New calls to generator.next() don’t make sense any more. If we do them, they return the same object: {done: true}.
+
+Both syntaxes are correct.
+
+But usually the first syntax is preferred, as the star * denotes that it’s a generator function, it describes the kind, not the name, so it should stick with the function keyword.
+
+As you probably already guessed looking at the next() method, generators are iterable.
+
+We can loop over their values using for..of:
+
+Looks a lot nicer than calling .next().value, right?
+
+…But please note: the example above shows 1, then 2, and that’s all. It doesn’t show 3!
+
+It’s because for..of iteration ignores the last value, when done: true. So, if we want all results to be shown by for..of, we must return them with yield:
+
+As generators are iterable, we can call all related functionality, e.g. the spread syntax ...:
+
+In the code above, ...generateSequence() turns the iterable generator object into an array of items (read more about the spread syntax in the chapter Rest parameters and spread syntax)
+
+Some time ago, in the chapter Iterables we created an iterable range object that returns values from..to.
+
+Here, let’s remember the code:
+
+We can use a generator function for iteration by providing it as Symbol.iterator.
+
+Here’s the same range, but much more compact:
+
+That works, because range[Symbol.iterator]() now returns a generator, and generator methods are exactly what for..of expects:
+
+That’s not a coincidence, of course. Generators were added to JavaScript language with iterators in mind, to implement them easily.
+
+The variant with a generator is much more concise than the original iterable code of range, and keeps the same functionality.
+
+In the examples above we generated finite sequences, but we can also make a generator that yields values forever. For instance, an unending sequence of pseudo-random numbers.
+
+That surely would require a break (or return) in for..of over such generator. Otherwise, the loop would repeat forever and hang.
+
+Generator composition is a special feature of generators that allows to transparently “embed” generators in each other.
+
+For instance, we have a function that generates a sequence of numbers:
+
+Now we’d like to reuse it to generate a more complex sequence:
+
+We can use this sequence e.g. to create passwords by selecting characters from it (could add syntax characters as well), but let’s generate it first.
+
+In a regular function, to combine results from multiple other functions, we call them, store the results, and then join at the end.
+
+For generators, there’s a special yield* syntax to “embed” (compose) one generator into another.
+
+The composed generator:
+
+The yield* directive delegates the execution to another generator. This term means that yield* gen iterates over the generator gen and transparently forwards its yields outside. As if the values were yielded by the outer generator.
+
+The result is the same as if we inlined the code from nested generators:
+
+A generator composition is a natural way to insert a flow of one generator into another. It doesn’t use extra memory to store intermediate results.
+
+Until this moment, generators were similar to iterable objects, with a special syntax to generate values. But in fact they are much more powerful and flexible.
+
+That’s because yield is a two-way street: it not only returns the result to the outside, but also can pass the value inside the generator.
+
+To do so, we should call generator.next(arg), with an argument. That argument becomes the result of yield.
+
+Let’s see an example:
+
+Please note, the outer code does not have to immediately call next(4). It may take time. That’s not a problem: the generator will wait.
+
+For instance:
+
+As we can see, unlike regular functions, a generator and the calling code can exchange results by passing values in next/yield.
+
+To make things more obvious, here’s another example, with more calls:
+
+The execution picture:
+
+It’s like a “ping-pong” game. Each next(value) (excluding the first one) passes a value into the generator, that becomes the result of the current yield, and then gets back the result of the next yield.
+
+As we observed in the examples above, the outer code may pass a value into the generator, as the result of yield.
+
+…But it can also initiate (throw) an error there. That’s natural, as an error is a kind of result.
+
+To pass an error into a yield, we should call generator.throw(err). In that case, the err is thrown in the line with that yield.
+
+For instance, here the yield of "2 + 2 = ?" leads to an error:
+
+The error, thrown into the generator at line (2) leads to an exception in line (1) with yield. In the example above, try..catch catches it and shows it.
+
+If we don’t catch it, then just like any exception, it “falls out” the generator into the calling code.
+
+The current line of the calling code is the line with generator.throw, labelled as (2). So we can catch it here, like this:
+
+If we don’t catch the error there, then, as usual, it falls through to the outer calling code (if any) and, if uncaught, kills the script.
+
+generator.return(value) finishes the generator execution and return the given value.
+
+If we again use generator.return() in a completed generator, it will return that value again (MDN).
+
+Often we don’t use it, as most of time we want to get all returning values, but it can be useful when we want to stop generator in a specific condition.
+
+In modern JavaScript, generators are rarely used. But sometimes they come in handy, because the ability of a function to exchange data with the calling code during the execution is quite unique. And, surely, they are great for making iterable objects.
+
+Also, in the next chapter we’ll learn async generators, which are used to read streams of asynchronously generated data (e.g paginated fetches over a network) in for await ... of loops.
+
+In web-programming we often work with streamed data, so that’s another very important use case.

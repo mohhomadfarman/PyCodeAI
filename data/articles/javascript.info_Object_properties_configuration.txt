@@ -1,0 +1,4 @@
+Title: Object properties configuration
+Source: https://javascript.info/object-properties
+
+In this section we return to objects and study their properties even more in-depth.
