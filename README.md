@@ -11,7 +11,4 @@ python cli.py train --epochs 15 --device gpu --embed-dim 256 --num-heads 8 --num
 
 
 day 3 
-python cli.py train --epochs 10 --device gpu \
-  --embed-dim 256 --num-heads 8 --num-layers 6 --seq-len 128 \
-  --load-model model.npz \
-  --learning-rate 1e-4
+python cli.py train --epochs 10 --device gpu --embed-dim 256 --num-heads 8 --num-layers 6 --seq-len 128 --load-model model.npz --learning-rate 1e-4
