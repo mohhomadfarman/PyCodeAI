@@ -30,7 +30,7 @@ class WebCrawler:
         """
         Fetch and parse a single article.
         """
-        print(f"🕷️  Fetching article: {url}")
+        print(f">> Fetching article: {url}")
         
         try:
             response = self.session.get(url, timeout=10)
@@ -53,7 +53,7 @@ class WebCrawler:
                 article_body = soup.body
                 
             if not article_body:
-                print("❌ Could not find article content.")
+                print("[ERROR] Could not find article content.")
                 return
 
             # Extract paragraphs
@@ -61,7 +61,7 @@ class WebCrawler:
             text_content = [p.get_text().strip() for p in paragraphs if p.get_text().strip()]
             
             if not text_content:
-                print("⚠️  No text found in paragraphs.")
+                print("[WARN] No text found in paragraphs.")
                 return
                 
             # Create filename from URL domain + title
@@ -76,10 +76,10 @@ class WebCrawler:
                 f.write("\n")
                 f.write("\n\n".join(text_content))
                 
-            print(f"   ✓ Saved to {filename} ({len(text_content)} paragraphs)")
+            print(f"   [OK] Saved to {filename} ({len(text_content)} paragraphs)")
             
         except Exception as e:
-            print(f"❌ Error fetching {url}: {e}")
+            print(f"[ERROR] Error fetching {url}: {e}")
 
 if __name__ == "__main__":
     crawler = WebCrawler()

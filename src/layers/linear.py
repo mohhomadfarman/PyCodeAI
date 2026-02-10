@@ -16,6 +16,7 @@ Learning Goals:
 """
 
 import numpy as np
+from ..core import backend as _backend
 from ..core.tensor import Tensor
 from typing import Optional
 
@@ -47,16 +48,16 @@ class Linear:
         
         # Xavier initialization for weights
         # This keeps variance stable across layers
-        scale = np.sqrt(2.0 / (in_features + out_features))
+        scale = _backend.xp.sqrt(2.0 / (in_features + out_features))
         self.weight = Tensor(
-            np.random.randn(in_features, out_features) * scale,
+            _backend.xp.random.randn(in_features, out_features) * scale,
             requires_grad=True
         )
         
         # Initialize bias to zeros
         if bias:
             self.bias = Tensor(
-                np.zeros(out_features),
+                _backend.xp.zeros(out_features),
                 requires_grad=True
             )
         else:
@@ -118,7 +119,7 @@ class Linear:
             
             if self.use_bias and self.bias.requires_grad:
                 # Gradient w.r.t. bias: sum over batch dimension
-                grad = np.sum(out_grad_flat, axis=0)
+                grad = _backend.xp.sum(out_grad_flat, axis=0)
                 self.bias.grad = self.bias.grad + grad if self.bias.grad is not None else grad
         
         out._backward = _backward

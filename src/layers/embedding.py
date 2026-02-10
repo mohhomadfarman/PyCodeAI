@@ -11,6 +11,8 @@ Learning Goals:
 """
 
 import numpy as np
+from ..core import backend as _backend
+from ..core.backend import to_device
 from ..core.tensor import Tensor
 from typing import Optional
 
@@ -44,9 +46,9 @@ class Embedding:
         
         # Initialize embedding matrix with small random values
         # Each row is the embedding for one token
-        scale = np.sqrt(1.0 / embed_dim)
+        scale = _backend.xp.sqrt(1.0 / embed_dim)
         self.weight = Tensor(
-            np.random.randn(vocab_size, embed_dim) * scale,
+            _backend.xp.random.randn(vocab_size, embed_dim) * scale,
             requires_grad=True
         )
     
@@ -84,12 +86,12 @@ class Embedding:
         def _backward():
             if self.weight.requires_grad:
                 # Gradient flows back to the looked-up embeddings
-                grad = np.zeros_like(self.weight.data)
+                grad = _backend.xp.zeros_like(self.weight.data)
                 # Reshape gradient to match flat indices
                 out_grad_flat = out.grad.reshape(-1, self.embed_dim)
                 
                 # Accumulate gradients for each token
-                np.add.at(grad, flat_ids, out_grad_flat)
+                _backend.xp.add.at(grad, flat_ids, out_grad_flat)
                 
                 if self.weight.grad is not None:
                     self.weight.grad = self.weight.grad + grad
@@ -139,14 +141,14 @@ class PositionalEncoding:
     
     def _create_encoding(self, max_len: int, d_model: int) -> np.ndarray:
         """Create sinusoidal positional encodings."""
-        position = np.arange(max_len)[:, np.newaxis]  # (max_len, 1)
-        div_term = np.exp(np.arange(0, d_model, 2) * (-np.log(10000.0) / d_model))
-        
-        pe = np.zeros((max_len, d_model))
-        pe[:, 0::2] = np.sin(position * div_term)  # Even indices: sin
-        pe[:, 1::2] = np.cos(position * div_term)  # Odd indices: cos
-        
-        return pe.astype(np.float32)
+        position = _backend.xp.arange(max_len)[:, _backend.xp.newaxis]  # (max_len, 1)
+        div_term = _backend.xp.exp(_backend.xp.arange(0, d_model, 2) * (-_backend.xp.log(10000.0) / d_model))
+
+        pe = _backend.xp.zeros((max_len, d_model))
+        pe[:, 0::2] = _backend.xp.sin(position * div_term)  # Even indices: sin
+        pe[:, 1::2] = _backend.xp.cos(position * div_term)  # Odd indices: cos
+
+        return pe.astype(_backend.xp.float32)
     
     def forward(self, x: Tensor) -> Tensor:
         """
@@ -161,8 +163,8 @@ class PositionalEncoding:
         seq_len = x.shape[1]
         
         # Get positional encoding for this sequence length
-        pos_enc = self.encoding[:seq_len]
-        
+        pos_enc = to_device(self.encoding[:seq_len])
+
         # Add to input (broadcasting over batch dimension)
         out = Tensor(
             x.data + pos_enc,

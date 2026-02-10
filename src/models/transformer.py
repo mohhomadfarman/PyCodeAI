@@ -17,6 +17,7 @@ Learning Goals:
 """
 
 import numpy as np
+from ..core import backend as _backend
 from ..core.tensor import Tensor
 from ..core.activations import gelu
 from ..layers.attention import MultiHeadAttention
@@ -97,38 +98,40 @@ class TransformerBlock:
     """
     
     def __init__(
-        self, 
-        embed_dim: int, 
+        self,
+        embed_dim: int,
         num_heads: int,
-        expansion_factor: int = 4
+        expansion_factor: int = 4,
+        max_seq_len: int = 1024
     ):
         """
         Initialize transformer block.
-        
+
         Args:
             embed_dim: Dimension of embeddings
             num_heads: Number of attention heads
             expansion_factor: FFN expansion factor
+            max_seq_len: Maximum sequence length (for cached causal mask)
         """
         self.embed_dim = embed_dim
         self.num_heads = num_heads
-        
+
         # Attention sublayer
         self.ln1 = LayerNorm(embed_dim)
-        self.attention = MultiHeadAttention(embed_dim, num_heads)
-        
+        self.attention = MultiHeadAttention(embed_dim, num_heads, max_seq_len=max_seq_len)
+
         # FFN sublayer
         self.ln2 = LayerNorm(embed_dim)
         self.ffn = FeedForward(embed_dim, expansion_factor)
-    
+
     def forward(self, x: Tensor, mask: Optional[np.ndarray] = None) -> Tensor:
         """
         Apply transformer block.
-        
+
         Args:
             x: Input tensor of shape (batch, seq_len, embed_dim)
             mask: Optional attention mask
-        
+
         Returns:
             Output tensor of same shape
         """
@@ -136,19 +139,17 @@ class TransformerBlock:
         # Pre-LN: normalize before attention
         h = self.ln1(x)
         attn_out = self.attention(h, mask=mask, is_causal=True)
-        
-        # Residual connection: x + attention output
-        x_data = x.data + attn_out.data
-        x = Tensor(x_data, requires_grad=True)
-        
+
+        # Residual connection (uses Tensor.__add__ for proper gradient flow)
+        x = x + attn_out
+
         # FFN sublayer with residual connection
         h = self.ln2(x)
         ffn_out = self.ffn(h)
-        
+
         # Residual connection
-        out_data = x.data + ffn_out.data
-        out = Tensor(out_data, requires_grad=True)
-        
+        out = x + ffn_out
+
         return out
     
     def __call__(self, x: Tensor, mask: Optional[np.ndarray] = None) -> Tensor:

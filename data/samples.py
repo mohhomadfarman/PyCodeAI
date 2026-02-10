@@ -609,10 +609,10 @@ def get_training_data():
                  data.append(content)
                  crawled_count += 1
                  
-            print(f"📦 Loaded {crawled_count} legacy crawled files")
+            print(f"[OK] Loaded {crawled_count} legacy crawled files")
             
         except Exception as e:
-            print(f"⚠️ Error reading {crawler_file}: {e}")
+            print(f"[WARN] Error reading {crawler_file}: {e}")
             
     # 6. New Structured Data (Folders)
     crawled_dir = "data/crawled"
@@ -643,7 +643,7 @@ def get_training_data():
                         print(f"Error reading {path}: {e}")
         
         if count > 0:
-            print(f"📦 Loaded {count} structured crawled files")
+            print(f"[OK] Loaded {count} structured crawled files")
             
     # 7. Web Articles
     data.extend(get_article_samples())
@@ -678,7 +678,7 @@ def get_article_samples():
                         print(f"Error reading article {path}: {e}")
         
         if count > 0:
-            print(f"📚 Loaded {count} articles")
+            print(f"[OK] Loaded {count} articles")
     return data
 
 
@@ -698,7 +698,7 @@ def get_chat_only_data():
     # 4. Web Articles (Good for language understanding)
     data.extend(get_article_samples() * 5) # Boost articles priority
     
-    print(f"💬 Loaded {len(data)} chat/article samples")
+    print(f"[OK] Loaded {len(data)} chat/article samples")
     return data
 
 

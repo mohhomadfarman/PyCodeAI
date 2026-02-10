@@ -52,7 +52,7 @@ class GitHubCrawler:
         Args:
             repo_url: "owner/repo" string (e.g. "facebook/react")
         """
-        print(f"🕷️  Crawling {repo_url}...")
+        print(f">> Crawling {repo_url}...")
         
         # Create repo-specific directory
         repo_name = repo_url.replace("/", "_")
@@ -63,10 +63,10 @@ class GitHubCrawler:
             # Start from root
             self._process_contents(repo_url, "", target_dir)
         except Exception as e:
-            print(f"❌ Error crawling {repo_url}: {e}")
+            print(f"[ERROR] Error crawling {repo_url}: {e}")
             self.stats['errors'] += 1
             
-        print("\n📊 Crawl finished!")
+        print("\n-- Crawl finished!")
         print(f"   Files: {self.stats['files_downloaded']}")
         print(f"   Lines: {self.stats['lines_saved']}")
         print(f"   Errors: {self.stats['errors']}")
@@ -80,7 +80,7 @@ class GitHubCrawler:
         response = self.session.get(url)
         
         if response.status_code == 403:
-            print("⚠️  Rate limit hit! Waiting 60s...")
+            print("[WARN] Rate limit hit! Waiting 60s...")
             time.sleep(60)
             response = self.session.get(url)
         
@@ -134,10 +134,10 @@ class GitHubCrawler:
                 
                 self.stats['files_downloaded'] += 1
                 self.stats['lines_saved'] += len(content.splitlines())
-                print(f"   ✓ {item_data['path']}")
+                print(f"   [OK] {item_data['path']}")
                 
         except Exception as e:
-            print(f"   ❌ Failed to download {item_data['path']}: {e}")
+            print(f"   [ERROR] Failed to download {item_data['path']}: {e}")
             self.stats['errors'] += 1
 
 

@@ -20,14 +20,42 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
+from src.core.backend import use_gpu, use_cpu, is_gpu, GPU_AVAILABLE
+
+
+def _setup_device(args):
+    """Configure GPU/CPU backend based on --device flag."""
+    device = getattr(args, 'device', 'auto')
+    if device == 'gpu':
+        if GPU_AVAILABLE:
+            use_gpu()
+        else:
+            print("WARNING: CuPy not installed. Using CPU.")
+            print("Install GPU support: pip install cupy-cuda12x")
+            use_cpu()
+    elif device == 'cpu':
+        use_cpu()
+    else:  # auto
+        if GPU_AVAILABLE:
+            use_gpu()
+        else:
+            use_cpu()
 
 
 def test_components():
     """Test all components of the system."""
     print("=" * 60)
-    print("🧪 Testing PyCodeAI Components")
+    print("[TEST] Testing PyCodeAI Components")
     print("=" * 60)
-    
+
+    # Auto-select device for tests
+    if GPU_AVAILABLE:
+        use_gpu()
+    else:
+        use_cpu()
+
+    from src.core.backend import xp
+
     # Test 1: Tensor
     print("\n1. Testing Tensor (autograd)...")
     from src.core.tensor import Tensor
@@ -36,43 +64,43 @@ def test_components():
     z = y.sum()
     z.backward()
     assert x.grad is not None, "Gradient not computed"
-    print("   ✓ Tensor works!")
-    
+    print("   [OK] Tensor works!")
+
     # Test 2: Activations
     print("\n2. Testing Activations...")
     from src.core.activations import relu, gelu, softmax
     x = Tensor([[1, -1, 2]])
     y = relu(x)
-    assert np.all(y.data >= 0), "ReLU failed"
-    print("   ✓ Activations work!")
-    
+    assert float(xp.all(y.data >= 0)), "ReLU failed"
+    print("   [OK] Activations work!")
+
     # Test 3: Linear layer
     print("\n3. Testing Linear layer...")
     from src.layers.linear import Linear
     layer = Linear(10, 5)
-    x = Tensor(np.random.randn(2, 10))
+    x = Tensor(xp.random.randn(2, 10))
     y = layer(x)
     assert y.shape == (2, 5), "Wrong output shape"
-    print("   ✓ Linear layer works!")
-    
+    print("   [OK] Linear layer works!")
+
     # Test 4: Attention
     print("\n4. Testing Attention...")
     from src.layers.attention import MultiHeadAttention
     attn = MultiHeadAttention(embed_dim=32, num_heads=4)
-    x = Tensor(np.random.randn(2, 8, 32))
+    x = Tensor(xp.random.randn(2, 8, 32))
     y = attn(x)
     assert y.shape == x.shape, "Wrong output shape"
-    print("   ✓ Attention works!")
-    
+    print("   [OK] Attention works!")
+
     # Test 5: Transformer Block
     print("\n5. Testing Transformer Block...")
     from src.models.transformer import TransformerBlock
     block = TransformerBlock(embed_dim=32, num_heads=4)
-    x = Tensor(np.random.randn(2, 8, 32))
+    x = Tensor(xp.random.randn(2, 8, 32))
     y = block(x)
     assert y.shape == x.shape, "Wrong output shape"
-    print("   ✓ Transformer Block works!")
-    
+    print("   [OK] Transformer Block works!")
+
     # Test 6: GPT Model
     print("\n6. Testing GPT Model...")
     from src.models.gpt import GPT, GPTConfig
@@ -81,8 +109,8 @@ def test_components():
     tokens = np.array([[1, 5, 10, 2]])
     logits = model(tokens)
     assert logits.shape == (1, 4, 50), "Wrong output shape"
-    print(f"   ✓ GPT works! Parameters: {model.num_parameters():,}")
-    
+    print(f"   [OK] GPT works! Parameters: {model.num_parameters():,}")
+
     # Test 7: Tokenizer
     print("\n7. Testing Tokenizer...")
     from src.tokenizer.tokenizer import Tokenizer
@@ -90,73 +118,76 @@ def test_components():
     tokenizer.build_vocab(["function test() { return 1; }"])
     encoded = tokenizer.encode("function add()")
     decoded = tokenizer.decode(encoded)
-    print(f"   ✓ Tokenizer works! Vocab size: {len(tokenizer.vocab)}")
-    
+    print(f"   [OK] Tokenizer works! Vocab size: {len(tokenizer.vocab)}")
+
     # Test 8: Loss function
     print("\n8. Testing Loss function...")
     from src.training.loss import cross_entropy_loss
-    logits = Tensor(np.random.randn(2, 4, 50), requires_grad=True)
+    logits = Tensor(xp.random.randn(2, 4, 50), requires_grad=True)
     targets = np.random.randint(0, 50, (2, 4))
     loss = cross_entropy_loss(logits, targets)
     loss.backward()
     assert logits.grad is not None, "Loss gradient not computed"
-    print("   ✓ Loss function works!")
-    
+    print("   [OK] Loss function works!")
+
     # Test 9: Optimizer
     print("\n9. Testing Optimizer...")
     from src.training.optimizer import Adam
     from src.core.tensor import Tensor
     param = Tensor([1.0, 2.0], requires_grad=True)
-    param.grad = np.array([0.1, 0.2])
+    param.grad = xp.array([0.1, 0.2], dtype=xp.float32)
     optimizer = Adam([param], lr=0.1)
     old_data = param.data.copy()
     optimizer.step()
-    assert not np.allclose(param.data, old_data), "Weights not updated"
-    print("   ✓ Optimizer works!")
-    
+    assert not bool(xp.allclose(param.data, old_data)), "Weights not updated"
+    print("   [OK] Optimizer works!")
+
+    print(f"\nDevice: {'GPU' if is_gpu() else 'CPU'}")
     print("\n" + "=" * 60)
-    print("✅ All components working!")
+    print("[OK] All components working!")
     print("=" * 60)
 
 
 def train_model(args):
     """Train the model."""
+    _setup_device(args)
+
     from src.models.gpt import GPT, GPTConfig
     from src.tokenizer.tokenizer import Tokenizer
     from src.training.trainer import Trainer, DataLoader
     from src.training.optimizer import Adam, LearningRateScheduler
-    from src.training.optimizer import Adam, LearningRateScheduler
     from data.samples import get_training_data, get_chat_only_data
-    
+
     print("=" * 60)
-    print("🚀 Training PyCodeAI")
+    print(">> Training PyCodeAI")
+    print(f"Device: {'GPU' if is_gpu() else 'CPU'}")
     print("=" * 60)
-    
+
     # Load training data
     print("\n1. Loading training data...")
     if hasattr(args, 'chat_only') and args.chat_only:
-        print("   🗣️  Chat Mode: Loading dedicated conversation data")
+        print("    Chat Mode: Loading dedicated conversation data")
         code_samples = get_chat_only_data()
     else:
         code_samples = get_training_data()
     print(f"   Loaded {len(code_samples)} samples")
-    
+
     # Build tokenizer
     print("\n2. Building tokenizer...")
     tokenizer = Tokenizer(vocab_size=args.vocab_size)
-    
+
     if args.load_model:
         print(f"   Loading tokenizer from {args.output_tokenizer}...")
         try:
             tokenizer.load(args.output_tokenizer)
         except Exception as e:
-            print(f"   ⚠️ Could not load tokenizer: {e}. Re-building.")
+            print(f"   [WARN] Could not load tokenizer: {e}. Re-building.")
             tokenizer.build_vocab(code_samples)
     else:
         tokenizer.build_vocab(code_samples)
-        
+
     print(f"   Vocabulary size: {len(tokenizer.vocab)}")
-    
+
     # Tokenize all samples
     print("\n3. Tokenizing data...")
     tokenized_data = []
@@ -165,7 +196,7 @@ def train_model(args):
         if len(tokens) > 2:  # Skip empty samples
             tokenized_data.append(tokens)
     print(f"   Tokenized {len(tokenized_data)} samples")
-    
+
     # Create model
     print("\n4. Creating model...")
     config = GPTConfig(
@@ -176,18 +207,18 @@ def train_model(args):
         num_layers=args.num_layers
     )
     model = GPT(config)
-    
+
     if args.load_model:
         print(f"   Loading weights from {args.load_model}...")
         try:
             model.load(args.load_model)
-            print("   ✅ Weights loaded successfully!")
+            print("   [OK] Weights loaded successfully!")
         except Exception as e:
-            print(f"   ⚠️ Could not load weights: {e}. Starting from scratch.")
-            
+            print(f"   [WARN] Could not load weights: {e}. Starting from scratch.")
+
     print(f"   Model parameters: {model.num_parameters():,}")
     print(config)
-    
+
     # Create data loader
     print("\n5. Creating data loader...")
     dataloader = DataLoader(
@@ -197,57 +228,59 @@ def train_model(args):
         pad_token_id=tokenizer.pad_token_id
     )
     print(f"   Batches per epoch: {len(dataloader)}")
-    
+
     # Create trainer
     print("\n6. Setting up trainer...")
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=0.01)
     total_steps = len(dataloader) * args.epochs
     scheduler = LearningRateScheduler(
-        optimizer, 
+        optimizer,
         warmup_steps=min(100, total_steps // 10),
         total_steps=total_steps
     )
-    
+
     trainer = Trainer(
         model,
         optimizer=optimizer,
         scheduler=scheduler,
         log_interval=args.log_interval
     )
-    
+
     # Train!
     print("\n7. Starting training...")
     history = trainer.train(
-        dataloader, 
+        dataloader,
         epochs=args.epochs,
         accumulation_steps=args.grad_accum
     )
-    
+
     # Save model and tokenizer
     print("\n8. Saving model...")
     model.save(args.output_model)
     tokenizer.save(args.output_tokenizer)
-    
+
     print("\n" + "=" * 60)
-    print("✅ Training complete!")
+    print("[OK] Training complete!")
     print(f"   Model saved to: {args.output_model}")
     print(f"   Tokenizer saved to: {args.output_tokenizer}")
     print("=" * 60)
-    
+
     return model, tokenizer
 
 
 def generate_code(args):
     """Generate code from a prompt."""
+    _setup_device(args)
+
     from src.models.gpt import GPT, GPTConfig
     from src.tokenizer.tokenizer import Tokenizer
     from src.inference.generator import CodeGenerator
-    
+
     # Load model and tokenizer
     print("Loading model...")
     tokenizer = Tokenizer()
     tokenizer.load(args.tokenizer_path)
-    
+
     # Try to load from config first
     try:
         model = GPT.load_from_dir(args.model_path)
@@ -262,41 +295,43 @@ def generate_code(args):
         )
         model = GPT(config)
         model.load(args.model_path)
-    
+
     # Generate
     generator = CodeGenerator(model, tokenizer)
-    
+
     print("\nGenerating code...")
     print("-" * 40)
-    
+
     result = generator.generate(
         args.prompt,
         max_tokens=args.max_tokens,
         temperature=args.temperature,
         top_k=args.top_k
     )
-    
+
     print(result)
     print("-" * 40)
 
 
 def interactive_mode(args):
     """Interactive generation mode."""
+    _setup_device(args)
+
     from src.models.gpt import GPT, GPTConfig
     from src.tokenizer.tokenizer import Tokenizer
     from src.inference.generator import CodeGenerator
-    
+
     # Check if model exists
     if not os.path.exists(args.model_path):
         print(f"Model not found at {args.model_path}")
         print("Please train the model first: python cli.py train")
         return
-    
+
     # Load model and tokenizer
     print("Loading model...")
     tokenizer = Tokenizer()
     tokenizer.load(args.tokenizer_path)
-    
+
     # Try to load from config first
     try:
         model = GPT.load_from_dir(args.model_path)
@@ -311,7 +346,7 @@ def interactive_mode(args):
         )
         model = GPT(config)
         model.load(args.model_path)
-    
+
     # Start interactive session
     generator = CodeGenerator(model, tokenizer)
     generator.interactive_session()
@@ -320,30 +355,30 @@ def interactive_mode(args):
 def crawl_repo(args):
     """Crawl a GitHub repository."""
     from src.data.crawler import GitHubCrawler
-    
+
     print("=" * 60)
-    print("🕷️  GitHub Crawler")
+    print("GitHub Crawler")
     print("=" * 60)
-    
+
     # Default to data/crawled if not specified
     output_dir = args.output if args.output != "data/training_data.txt" else "data/crawled"
-    
+
     crawler = GitHubCrawler(
         output_dir=output_dir,
         token=args.token
     )
-    
+
     crawler.crawl(args.repo)
 
 
 def crawl_web(args):
     """Crawl a web article."""
     from src.data.web_crawler import WebCrawler
-    
+
     print("=" * 60)
-    print("🕷️  Web Crawler")
+    print("Web Crawler")
     print("=" * 60)
-    
+
     crawler = WebCrawler(output_dir=args.output)
     crawler.crawl_article(args.url)
 
@@ -353,16 +388,16 @@ def main():
         description="PyCodeAI - Build Your Own AI From Scratch",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Test command
     test_parser = subparsers.add_parser("test", help="Test all components")
-    
+
     # Train command
     train_parser = subparsers.add_parser("train", help="Train the model")
     train_parser.add_argument("--epochs", type=int, default=10, help="Number of epochs")
-    train_parser.add_argument("--batch-size", type=int, default=8, help="Batch size")
+    train_parser.add_argument("--batch-size", type=int, default=64, help="Batch size (32-64 recommended for GPU)")
     train_parser.add_argument("--seq-len", type=int, default=64, help="Sequence length")
     train_parser.add_argument("--embed-dim", type=int, default=128, help="Embedding dimension")
     train_parser.add_argument("--num-heads", type=int, default=4, help="Number of attention heads")
@@ -375,7 +410,9 @@ def main():
     train_parser.add_argument("--load-model", type=str, help="Path to existing model to finetune")
     train_parser.add_argument("--output-model", type=str, default="model.npz", help="Output model path")
     train_parser.add_argument("--output-tokenizer", type=str, default="tokenizer.json", help="Output tokenizer path")
-    
+    train_parser.add_argument("--device", type=str, default="auto", choices=["cpu", "gpu", "auto"],
+                              help="Device to use: cpu, gpu, or auto (default: auto)")
+
     # Generate command
     gen_parser = subparsers.add_parser("generate", help="Generate code")
     gen_parser.add_argument("prompt", type=str, help="Code prompt")
@@ -388,7 +425,9 @@ def main():
     gen_parser.add_argument("--embed-dim", type=int, default=128, help="Embedding dimension")
     gen_parser.add_argument("--num-heads", type=int, default=4, help="Number of attention heads")
     gen_parser.add_argument("--num-layers", type=int, default=4, help="Number of transformer layers")
-    
+    gen_parser.add_argument("--device", type=str, default="auto", choices=["cpu", "gpu", "auto"],
+                            help="Device to use: cpu, gpu, or auto (default: auto)")
+
     # Interactive command
     int_parser = subparsers.add_parser("interactive", help="Interactive mode")
     int_parser.add_argument("--model-path", type=str, default="model.npz", help="Model path")
@@ -397,20 +436,30 @@ def main():
     int_parser.add_argument("--embed-dim", type=int, default=128, help="Embedding dimension")
     int_parser.add_argument("--num-heads", type=int, default=4, help="Number of attention heads")
     int_parser.add_argument("--num-layers", type=int, default=4, help="Number of transformer layers")
+    int_parser.add_argument("--device", type=str, default="auto", choices=["cpu", "gpu", "auto"],
+                            help="Device to use: cpu, gpu, or auto (default: auto)")
 
     # Crawl command
     crawl_parser = subparsers.add_parser("crawl", help="Crawl GitHub repo")
     crawl_parser.add_argument("repo", type=str, help="GitHub repo (owner/repo)")
     crawl_parser.add_argument("--output", type=str, default="data/crawled", help="Output directory")
     crawl_parser.add_argument("--token", type=str, default=None, help="GitHub API token")
-    
+
     # Web Crawl command
     web_parser = subparsers.add_parser("crawl-web", help="Crawl web article")
     web_parser.add_argument("url", type=str, help="Article URL")
     web_parser.add_argument("--output", type=str, default="data/articles", help="Output directory")
-    
+
+    # Chat UI command
+    chat_parser = subparsers.add_parser("chat", help="Open browser chat UI")
+    chat_parser.add_argument("--model-path", type=str, default="model.npz", help="Model path")
+    chat_parser.add_argument("--tokenizer-path", type=str, default="tokenizer.json", help="Tokenizer path")
+    chat_parser.add_argument("--port", type=int, default=5000, help="Server port")
+    chat_parser.add_argument("--device", type=str, default="auto", choices=["cpu", "gpu", "auto"],
+                              help="Device to use: cpu, gpu, or auto (default: auto)")
+
     args = parser.parse_args()
-    
+
     if args.command == "test":
         test_components()
     elif args.command == "train":
@@ -423,6 +472,14 @@ def main():
         crawl_repo(args)
     elif args.command == "crawl-web":
         crawl_web(args)
+    elif args.command == "chat":
+        from chat_ui import start_chat_server
+        start_chat_server(
+            model_path=args.model_path,
+            tokenizer_path=args.tokenizer_path,
+            device=args.device,
+            port=args.port,
+        )
     else:
         parser.print_help()
 

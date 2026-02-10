@@ -18,6 +18,7 @@ Learning Goals:
 """
 
 import numpy as np
+from ..core import backend as _backend
 from ..core.tensor import Tensor
 from typing import Tuple
 
@@ -48,8 +49,8 @@ class LayerNorm:
         
         # Learnable scale (gamma) and shift (beta)
         # Initialized to 1 and 0 respectively
-        self.gamma = Tensor(np.ones(normalized_shape), requires_grad=True)
-        self.beta = Tensor(np.zeros(normalized_shape), requires_grad=True)
+        self.gamma = Tensor(_backend.xp.ones(normalized_shape), requires_grad=True)
+        self.beta = Tensor(_backend.xp.zeros(normalized_shape), requires_grad=True)
     
     def forward(self, x: Tensor) -> Tensor:
         """
@@ -62,11 +63,11 @@ class LayerNorm:
             Normalized tensor of same shape
         """
         # Compute mean and variance along last dimension
-        mean = np.mean(x.data, axis=-1, keepdims=True)
-        var = np.var(x.data, axis=-1, keepdims=True)
+        mean = _backend.xp.mean(x.data, axis=-1, keepdims=True)
+        var = _backend.xp.var(x.data, axis=-1, keepdims=True)
         
         # Normalize
-        x_norm = (x.data - mean) / np.sqrt(var + self.eps)
+        x_norm = (x.data - mean) / _backend.xp.sqrt(var + self.eps)
         
         # Scale and shift
         output = self.gamma.data * x_norm + self.beta.data
@@ -77,38 +78,36 @@ class LayerNorm:
             _children=(x, self.gamma, self.beta),
             _op='layernorm'
         )
-        
-        # Store for backward
-        self._x_norm = x_norm
-        self._std = np.sqrt(var + self.eps)
-        self._mean = mean
-        
+
+        # Local variable for backward closure (avoids storing on self)
+        std = _backend.xp.sqrt(var + self.eps)
+
         def _backward():
             n = self.normalized_shape
-            
+
             if self.gamma.requires_grad:
                 # Gradient w.r.t gamma: sum of x_norm * grad
-                grad_gamma = np.sum(x_norm * out.grad, axis=tuple(range(x.data.ndim - 1)))
+                grad_gamma = _backend.xp.sum(x_norm * out.grad, axis=tuple(range(x.data.ndim - 1)))
                 self.gamma.grad = self.gamma.grad + grad_gamma if self.gamma.grad is not None else grad_gamma
-            
+
             if self.beta.requires_grad:
                 # Gradient w.r.t beta: sum of grad
-                grad_beta = np.sum(out.grad, axis=tuple(range(x.data.ndim - 1)))
+                grad_beta = _backend.xp.sum(out.grad, axis=tuple(range(x.data.ndim - 1)))
                 self.beta.grad = self.beta.grad + grad_beta if self.beta.grad is not None else grad_beta
-            
+
             if x.requires_grad:
                 # Gradient w.r.t input (more complex due to normalization)
                 # dx_norm = gamma * grad
                 dx_norm = self.gamma.data * out.grad
-                
+
                 # Backprop through normalization
-                dvar = np.sum(dx_norm * (x.data - mean) * -0.5 * (var + self.eps) ** -1.5, axis=-1, keepdims=True)
-                dmean = np.sum(dx_norm * -1 / self._std, axis=-1, keepdims=True)
-                dmean += dvar * np.sum(-2 * (x.data - mean), axis=-1, keepdims=True) / n
-                
-                grad = dx_norm / self._std + dvar * 2 * (x.data - mean) / n + dmean / n
+                dvar = _backend.xp.sum(dx_norm * (x.data - mean) * -0.5 * (var + self.eps) ** -1.5, axis=-1, keepdims=True)
+                dmean = _backend.xp.sum(dx_norm * -1 / std, axis=-1, keepdims=True)
+                dmean += dvar * _backend.xp.sum(-2 * (x.data - mean), axis=-1, keepdims=True) / n
+
+                grad = dx_norm / std + dvar * 2 * (x.data - mean) / n + dmean / n
                 x.grad = x.grad + grad if x.grad is not None else grad
-        
+
         out._backward = _backward
         return out
     
@@ -133,11 +132,11 @@ class RMSNorm:
     def __init__(self, normalized_shape: int, eps: float = 1e-5):
         self.normalized_shape = normalized_shape
         self.eps = eps
-        self.gamma = Tensor(np.ones(normalized_shape), requires_grad=True)
-    
+        self.gamma = Tensor(_backend.xp.ones(normalized_shape), requires_grad=True)
+
     def forward(self, x: Tensor) -> Tensor:
         # Compute RMS
-        rms = np.sqrt(np.mean(x.data ** 2, axis=-1, keepdims=True) + self.eps)
+        rms = _backend.xp.sqrt(_backend.xp.mean(x.data ** 2, axis=-1, keepdims=True) + self.eps)
         x_norm = x.data / rms
         output = self.gamma.data * x_norm
         
@@ -148,21 +147,18 @@ class RMSNorm:
             _op='rmsnorm'
         )
         
-        self._x_norm = x_norm
-        self._rms = rms
-        
         def _backward():
             if self.gamma.requires_grad:
-                grad_gamma = np.sum(x_norm * out.grad, axis=tuple(range(x.data.ndim - 1)))
+                grad_gamma = _backend.xp.sum(x_norm * out.grad, axis=tuple(range(x.data.ndim - 1)))
                 self.gamma.grad = self.gamma.grad + grad_gamma if self.gamma.grad is not None else grad_gamma
-            
+
             if x.requires_grad:
                 n = self.normalized_shape
                 dx_norm = self.gamma.data * out.grad
-                
+
                 # Simplified RMSNorm gradient
-                grad = dx_norm / self._rms
-                grad -= x_norm * np.mean(dx_norm * x_norm, axis=-1, keepdims=True)
+                grad = dx_norm / rms
+                grad -= x_norm * _backend.xp.mean(dx_norm * x_norm, axis=-1, keepdims=True)
                 x.grad = x.grad + grad if x.grad is not None else grad
         
         out._backward = _backward

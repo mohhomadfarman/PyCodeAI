@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout:*)",
+      "Bash(powershell -c:*)",
+      "Bash(./venv/Scripts/python.exe:*)"
+    ]
+  }
+}

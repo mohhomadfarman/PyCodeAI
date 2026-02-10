@@ -16,6 +16,8 @@ Learning Goals:
 """
 
 import numpy as np
+from ..core import backend as _backend
+from ..core.backend import to_numpy, to_device
 from ..core.tensor import Tensor
 from ..core.activations import softmax, log_softmax
 from ..layers.embedding import Embedding, PositionalEncoding
@@ -116,7 +118,7 @@ class GPT:
         
         # Transformer blocks
         self.blocks = [
-            TransformerBlock(config.embed_dim, config.num_heads, config.expansion_factor)
+            TransformerBlock(config.embed_dim, config.num_heads, config.expansion_factor, config.max_seq_len)
             for _ in range(config.num_layers)
         ]
         
@@ -182,7 +184,7 @@ class GPT:
         Returns:
             Generated token IDs including prompt
         """
-        tokens = prompt_tokens.copy()
+        tokens = _backend.xp.array(prompt_tokens)
         
         for _ in range(max_new_tokens):
             # Get only the last max_seq_len tokens
@@ -201,9 +203,9 @@ class GPT:
             # Apply top-k filtering
             if top_k is not None:
                 # Set all logits except top k to -infinity
-                top_k_indices = np.argsort(logits_last, axis=-1)[:, -top_k:]
-                mask = np.ones_like(logits_last) * (-1e10)
-                np.put_along_axis(mask, top_k_indices, 0, axis=-1)
+                top_k_indices = _backend.xp.argsort(logits_last, axis=-1)[:, -top_k:]
+                mask = _backend.xp.ones_like(logits_last) * (-1e10)
+                _backend.xp.put_along_axis(mask, top_k_indices, 0, axis=-1)
                 logits_last = logits_last + mask
             
             # Convert to probabilities
@@ -213,24 +215,25 @@ class GPT:
             next_token = self._sample(probs)
             
             # Append to sequence
-            tokens = np.concatenate([tokens, next_token], axis=1)
+            tokens = _backend.xp.concatenate([tokens, next_token], axis=1)
         
         return tokens
     
-    def _softmax(self, x: np.ndarray) -> np.ndarray:
+    def _softmax(self, x):
         """Numerically stable softmax."""
-        x_max = np.max(x, axis=-1, keepdims=True)
-        exp_x = np.exp(x - x_max)
-        return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+        x_max = _backend.xp.max(x, axis=-1, keepdims=True)
+        exp_x = _backend.xp.exp(x - x_max)
+        return exp_x / _backend.xp.sum(exp_x, axis=-1, keepdims=True)
     
-    def _sample(self, probs: np.ndarray) -> np.ndarray:
+    def _sample(self, probs):
         """Sample from probability distribution."""
         batch_size = probs.shape[0]
         next_tokens = []
         for b in range(batch_size):
-            next_token = np.random.choice(len(probs[b]), p=probs[b])
+            probs_np = to_numpy(probs[b])
+            next_token = np.random.choice(len(probs_np), p=probs_np)
             next_tokens.append(next_token)
-        return np.array(next_tokens).reshape(batch_size, 1)
+        return _backend.xp.array(next_tokens).reshape(batch_size, 1)
     
     def parameters(self):
         """Return all trainable parameters."""
@@ -270,7 +273,7 @@ class GPT:
         # Save weights
         weights = {}
         for i, param in enumerate(self.parameters()):
-            weights[f"param_{i}"] = param.data
+            weights[f"param_{i}"] = to_numpy(param.data)
         np.savez(path, **weights)
         print(f"Model saved to {path}")
         print(f"Config saved to {config_path}")
@@ -295,7 +298,7 @@ class GPT:
                 data = weights[f"param_{i}"]
                 if param.data.shape != data.shape:
                    raise ValueError(f"Shape mismatch for param_{i}: expected {param.data.shape}, got {data.shape}")
-                param.data = data
+                param.data = to_device(data).astype(_backend.xp.float32)
             else:
                 print(f"WARNING: param_{i} not found in weights file")
         
